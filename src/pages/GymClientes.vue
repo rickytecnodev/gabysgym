@@ -206,17 +206,23 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { fetchClientes, createCliente, updateCliente, deleteCliente, fetchSucursales, fetchMembresias } from '@/services/gymApi';
 import { useAuth } from '@/composables/useAuth';
 import type { Cliente, ClienteForm, Sucursal } from '@/types/gym';
+
+// Tipo extendido para clientes con información de membresías
+interface ClienteConMembresias extends Cliente {
+  membresias_activas?: number;
+  fecha_vencimiento_activa?: string | null;
+}
 import Swal from 'sweetalert2';
 import GymNavbar from '@/components/GymNavbar.vue';
 
 const { currentSucursalId, isSuperadmin } = useAuth();
 
-const clientes = ref<Cliente[]>([]);
+const clientes = ref<ClienteConMembresias[]>([]);
 const sucursales = ref<Sucursal[]>([]);
 const showModal = ref(false);
 const showDetalleModal = ref(false);
 const clienteEditando = ref<Cliente | null>(null);
-const clienteDetalle = ref<Cliente | null>(null);
+const clienteDetalle = ref<ClienteConMembresias | null>(null);
 const loading = ref(false);
 const errorMessage = ref('');
 const busqueda = ref('');

@@ -270,7 +270,7 @@ const loadStats = async () => {
     );
     
     // Pagos de membresías de hoy
-    const { data: pagosMembresia, error: pagosError } = await fetchPagosMembresiaConFiltros(
+    const { data: pagosMembresia } = await fetchPagosMembresiaConFiltros(
       isSuperadmin.value ? null : currentSucursalId.value,
       undefined,
       hoy,

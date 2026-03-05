@@ -99,7 +99,7 @@
               </select>
             </div>
             <div class="col-md-12 d-flex align-items-end gap-2">
-              <button @click="actualizarEstados" class="btn btn-info">
+              <button @click="() => actualizarEstados()" class="btn btn-info">
                 <i class="fa-solid fa-sync me-1"></i>
                 Actualizar Estados
               </button>
