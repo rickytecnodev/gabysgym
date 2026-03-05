@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router';
 import GymLogin from '@/pages/GymLogin.vue';
 import GymDashboard from '@/pages/GymDashboard.vue';
 import GymProductos from '@/pages/GymProductos.vue';
@@ -8,7 +8,7 @@ import GymClientes from '@/pages/GymClientes.vue';
 import GymReportes from '@/pages/GymReportes.vue';
 import { useAuth } from '@/composables/useAuth';
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     redirect: '/gym/login'

@@ -180,7 +180,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { getReporteVentas, getReporteMembresias, fetchVentas, fetchSucursales, fetchPagosMembresiaConFiltros } from '@/services/gymApi';
+import { getReporteVentas, getReporteMembresias, fetchSucursales } from '@/services/gymApi';
 import { useAuth } from '@/composables/useAuth';
 import type { ReporteVentas, ReporteMembresias, Empleado, Sucursal } from '@/types/gym';
 import { supabase } from '@/utils/supabase';

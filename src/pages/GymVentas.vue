@@ -438,7 +438,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { fetchVentas, createVenta, updateVentaEstado, fetchProductos, fetchClientes, fetchSucursales, fetchPagosMembresiaConFiltros } from '@/services/gymApi';
 import { useAuth } from '@/composables/useAuth';
 import { useGymFilters } from '@/composables/useGymFilters';
-import type { Venta, Producto, Cliente, VentaForm, Sucursal, PagoMembresia, Membresia } from '@/types/gym';
+import type { Venta, Producto, Cliente, VentaForm, Sucursal, PagoMembresia } from '@/types/gym';
 import Swal from 'sweetalert2';
 import GymNavbar from '@/components/GymNavbar.vue';
 
@@ -769,25 +769,6 @@ const verDetalleMembresia = (pago: PagoMembresia) => {
   showDetalleMembresiaModal.value = true;
 };
 
-const marcarPagado = async (id: number) => {
-  const result = await Swal.fire({
-    title: '¿Marcar como pagado?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, marcar',
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (result.isConfirmed) {
-    const { error } = await updateVentaEstado(id, 'pagado');
-    if (error) {
-      Swal.fire('Error', error.message, 'error');
-      return;
-    }
-    Swal.fire('Éxito', 'Venta marcada como pagada', 'success');
-    loadVentas();
-  }
-};
 
 const marcarPagadoDesdeDetalle = async () => {
   if (!ventaDetalle.value) return;

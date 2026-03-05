@@ -5,7 +5,6 @@ import type {
   Cliente,
   Producto,
   Venta,
-  VentaDetalle,
   TipoMembresia,
   Membresia,
   PagoMembresia,
