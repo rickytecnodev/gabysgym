@@ -27,10 +27,11 @@ app.use(PrimeVue, {
 app.config.globalProperties.$swal = Swal;
 
 // Registrar Service Worker para PWA
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+if ('serviceWorker' in navigator) {
   // @ts-ignore - virtual:pwa-register es un módulo virtual de vite-plugin-pwa
   import('virtual:pwa-register').then(({ registerSW }) => {
     const updateSW = registerSW({
+      immediate: true,
       onNeedRefresh() {
         // Mostrar notificación cuando hay una actualización disponible
         Swal.fire({
@@ -51,7 +52,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       },
     });
   }).catch(() => {
-    // El módulo virtual solo está disponible en build, ignorar en desarrollo
+    // El módulo virtual solo está disponible cuando el plugin está activo
     console.log('PWA register not available');
   });
 }

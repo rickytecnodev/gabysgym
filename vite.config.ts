@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['img/logo.png'],
       manifest: {
         name: 'Sistema de Gestión de Gimnasios',
@@ -17,6 +17,7 @@ export default defineConfig({
         theme_color: '#224a9d',
         background_color: '#ffffff',
         display: 'standalone',
+        orientation: 'portrait',
         lang: 'es',
         start_url: './',
         scope: './',
@@ -24,6 +25,7 @@ export default defineConfig({
           { src: 'img/logo.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'img/logo.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
+        categories: ['business', 'productivity'],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
