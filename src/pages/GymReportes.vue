@@ -5,84 +5,22 @@
       <h1 class="h3 mb-4">Reportes</h1>
 
       <!-- Filtros -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <!-- Botones de filtro rápido -->
-          <div class="mb-3">
-            <label class="form-label fw-bold">Filtro Rápido:</label>
-            <div class="btn-group" role="group">
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'hoy' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('hoy')"
-              >
-                Hoy
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'semana' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('semana')"
-              >
-                Semana Actual
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'mes' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('mes')"
-              >
-                Mes Actual
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'año' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('año')"
-              >
-                Año Actual
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm btn-outline-secondary"
-                @click="limpiarPeriodo"
-                v-if="periodoActivo"
-              >
-                Limpiar
-              </button>
-            </div>
-          </div>
-          <div class="row g-3">
-            <div class="col-md-3" v-if="isSuperadmin">
-              <label class="form-label">Sucursal</label>
-              <select v-model="filtroSucursalId" class="form-select">
-                <option value="">Todas</option>
-                <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-                  {{ sucursal.nombre }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-3" v-if="isSuperadmin">
-              <label class="form-label">Empleado</label>
-              <select v-model="filtroEmpleadoId" class="form-select">
-                <option value="">Todos</option>
-                <option v-for="empleado in empleadosFiltrados" :key="empleado.id" :value="empleado.id">
-                  {{ empleado.nombre_completo }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Fecha Desde</label>
-              <input v-model="filtroFechaDesde" type="date" class="form-control" :disabled="!!periodoActivo">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Fecha Hasta</label>
-              <input v-model="filtroFechaHasta" type="date" class="form-control" :disabled="!!periodoActivo">
-            </div>
-          </div>
-        </div>
-      </div>
+      <FiltrosReportes
+        :periodo-activo="periodoActivo"
+        :filtro-sucursal-id="filtroSucursalId"
+        :filtro-empleado-id="filtroEmpleadoId"
+        :filtro-fecha-desde="filtroFechaDesde"
+        :filtro-fecha-hasta="filtroFechaHasta"
+        :sucursales="sucursales"
+        :empleados-filtrados="empleadosFiltrados"
+        :is-superadmin="isSuperadmin"
+        @aplicar-periodo="aplicarPeriodo"
+        @limpiar-periodo="limpiarPeriodo"
+        @update:filtroSucursalId="filtroSucursalId = $event"
+        @update:filtroEmpleadoId="filtroEmpleadoId = $event"
+        @update:filtroFechaDesde="filtroFechaDesde = $event; recargarReportes()"
+        @update:filtroFechaHasta="filtroFechaHasta = $event; recargarReportes()"
+      />
 
       <!-- Reporte de Ventas -->
       <div class="card mb-4">
@@ -90,7 +28,13 @@
           <h5 class="mb-0">Reporte de Ventas</h5>
         </div>
         <div class="card-body">
-          <div v-if="reporteVentas.length > 0" class="table-responsive">
+          <div v-if="loadingDataReportes" class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            Cargando reportes...
+          </div>
+          <div v-else-if="reporteVentas.length > 0" class="table-responsive">
             <table class="table table-hover">
               <thead>
                 <tr>
@@ -137,7 +81,13 @@
           <h5 class="mb-0">Estado de Membresías</h5>
         </div>
         <div class="card-body">
-          <div v-if="reporteMembresias" class="row g-3">
+          <div v-if="loadingDataReportes" class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            Cargando reportes...
+          </div>
+          <div v-else-if="reporteMembresias" class="row g-3">
             <div class="col-md-3">
               <div class="card border-success">
                 <div class="card-body text-center">
@@ -180,18 +130,23 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { getReporteVentas, getReporteMembresias, fetchSucursales } from '@/services/gymApi';
 import { useAuth } from '@/composables/useAuth';
-import type { ReporteVentas, ReporteMembresias, Empleado, Sucursal } from '@/types/gym';
-import { supabase } from '@/utils/supabase';
+import { useReportes } from '@/composables/useReportes';
 import GymNavbar from '@/components/GymNavbar.vue';
+import FiltrosReportes from '@/components/reportes/FiltrosReportes.vue';
 
 const { currentSucursalId, isSuperadmin } = useAuth();
+const {
+  reporteVentas,
+  reporteMembresias,
+  empleados,
+  sucursales,
+  loadingData: loadingDataReportes,
+  loadSucursales,
+  cargarEmpleados,
+  cargarReportes
+} = useReportes();
 
-const reporteVentas = ref<ReporteVentas[]>([]);
-const reporteMembresias = ref<ReporteMembresias | null>(null);
-const empleados = ref<Empleado[]>([]);
-const sucursales = ref<Sucursal[]>([]);
 const filtroFechaDesde = ref('');
 const filtroFechaHasta = ref('');
 const filtroEmpleadoId = ref<number | null>(null);
@@ -221,25 +176,35 @@ const empleadosFiltrados = computed(() => {
   return empleados.value.filter(e => e.sucursal_id === filtroSucursalId.value);
 });
 
-// Watchers para hacer los filtros reactivos
-watch([filtroFechaDesde, filtroFechaHasta, filtroEmpleadoId, filtroSucursalId], () => {
-  // Solo cargar si ambas fechas están establecidas
+const recargarReportes = () => {
   if (filtroFechaDesde.value && filtroFechaHasta.value) {
-    cargarReportes();
+    const sucursalId = isSuperadmin.value 
+      ? (filtroSucursalId.value || null)
+      : currentSucursalId.value;
+    
+    cargarReportes(
+      filtroFechaDesde.value,
+      filtroFechaHasta.value,
+      sucursalId,
+      filtroEmpleadoId.value || undefined
+    );
   }
+};
+
+watch([filtroFechaDesde, filtroFechaHasta, filtroEmpleadoId, filtroSucursalId], () => {
+  recargarReportes();
 }, { immediate: false });
 
-// Watcher para recargar empleados cuando cambia la sucursal
 watch(filtroSucursalId, () => {
   if (isSuperadmin.value) {
-    cargarEmpleados();
-    // Limpiar filtro de empleado si cambia la sucursal
+    cargarEmpleados(filtroSucursalId.value || undefined);
     filtroEmpleadoId.value = null;
+    // Recargar reportes después de cambiar sucursal y resetear empleado
+    recargarReportes();
   }
 });
 
 onMounted(async () => {
-  // Establecer período activo como "hoy" por defecto usando la misma función
   periodoActivo.value = 'hoy';
   const fechas = calcularFechasPeriodo('hoy');
   
@@ -253,16 +218,18 @@ onMounted(async () => {
   }
   
   await cargarEmpleados();
-  // Cargar reportes después de establecer las fechas
-  await cargarReportes();
+  
+  const sucursalId = isSuperadmin.value 
+    ? (filtroSucursalId.value || null)
+    : currentSucursalId.value;
+  
+  await cargarReportes(
+    filtroFechaDesde.value,
+    filtroFechaHasta.value,
+    sucursalId,
+    filtroEmpleadoId.value || undefined
+  );
 });
-
-const loadSucursales = async () => {
-  const { data } = await fetchSucursales();
-  if (data) {
-    sucursales.value = data;
-  }
-};
 
 const calcularFechasPeriodo = (periodo: string) => {
   const hoy = new Date();
@@ -303,82 +270,41 @@ const aplicarPeriodo = (periodo: string) => {
   const fechas = calcularFechasPeriodo(periodo);
   
   if (fechas.desde && fechas.hasta) {
-    // Actualizar las fechas - el watcher se encargará de recargar
     filtroFechaDesde.value = fechas.desde;
     filtroFechaHasta.value = fechas.hasta;
+    
+    const sucursalId = isSuperadmin.value 
+      ? (filtroSucursalId.value || null)
+      : currentSucursalId.value;
+    
+    cargarReportes(
+      filtroFechaDesde.value,
+      filtroFechaHasta.value,
+      sucursalId,
+      filtroEmpleadoId.value || undefined
+    );
   }
 };
 
 const limpiarPeriodo = () => {
   periodoActivo.value = '';
   const hoy = new Date();
-  // Establecer ambas fechas como hoy al limpiar
   filtroFechaDesde.value = hoy.toISOString().split('T')[0];
   filtroFechaHasta.value = hoy.toISOString().split('T')[0];
-  // El watcher se encargará de llamar a cargarReportes automáticamente
-};
-
-const cargarEmpleados = async () => {
-  if (!isSuperadmin.value) return;
   
-  let query = supabase
-    .from('empleados')
-    .select('id, nombre_completo, sucursal_id')
-    .eq('activo', true)
-    .neq('rol', 'superadmin')
-    .order('nombre_completo');
-  
-  // Si hay filtro de sucursal, filtrar por sucursal
-  if (filtroSucursalId.value) {
-    query = query.eq('sucursal_id', filtroSucursalId.value);
-  }
-  
-  const { data } = await query;
-  
-  if (data) {
-    empleados.value = data as Empleado[];
-  }
-};
-
-const cargarReportes = async () => {
-  // Usar siempre las fechas del filtro (ya están establecidas por el período o manualmente)
-  const fechaDesde = filtroFechaDesde.value;
-  const fechaHasta = filtroFechaHasta.value;
-  
-  if (!fechaDesde || !fechaHasta) {
-    return;
-  }
-
-  // Determinar sucursal para el reporte
   const sucursalId = isSuperadmin.value 
     ? (filtroSucursalId.value || null)
     : currentSucursalId.value;
   
-  // Cargar reporte de ventas (combinado)
-  const { data: ventasData, error: reporteVentasError } = await getReporteVentas(
-    fechaDesde,
-    fechaHasta,
+  cargarReportes(
+    filtroFechaDesde.value,
+    filtroFechaHasta.value,
     sucursalId,
     filtroEmpleadoId.value || undefined
   );
-
-  if (reporteVentasError) {
-    console.error('Error al cargar reporte de ventas:', reporteVentasError);
-  } else if (ventasData) {
-    reporteVentas.value = ventasData;
-  }
-
-  // Cargar reporte de membresías (no depende de fechas, solo de sucursal)
-  const { data: membresiasData, error: membresiasError } = await getReporteMembresias(
-    sucursalId
-  );
-
-  if (membresiasError) {
-    console.error('Error al cargar reporte de membresías:', membresiasError);
-  } else if (membresiasData) {
-    reporteMembresias.value = membresiasData;
-  }
 };
+
+// Las funciones cargarEmpleados y cargarReportes ahora vienen del composable
 
 const formatFecha = (fecha: string) => {
   return new Date(fecha).toLocaleDateString('es-MX');

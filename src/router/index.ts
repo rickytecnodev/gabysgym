@@ -23,7 +23,7 @@ const routes: RouteRecordRaw[] = [
     path: '/gym/dashboard',
     name: 'GymDashboard',
     component: GymDashboard,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresSuperadmin: true }
   },
   {
     path: '/gym/productos',
@@ -68,7 +68,7 @@ const router = createRouter({
 
 // Guard de navegación para proteger rutas
 router.beforeEach((to, _from, next) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isSuperadmin } = useAuth();
 
   // Si la ruta requiere autenticación y el usuario no está autenticado
   if (to.meta.requiresAuth && !isAuthenticated.value) {
@@ -76,9 +76,20 @@ router.beforeEach((to, _from, next) => {
     return;
   }
 
+  // Si la ruta requiere superadmin y el usuario no es superadmin
+  if (to.meta.requiresSuperadmin && !isSuperadmin.value) {
+    next({ name: 'GymVentas' });
+    return;
+  }
+
   // Si la ruta requiere ser invitado (no autenticado) y el usuario está autenticado
   if (to.meta.requiresGuest && isAuthenticated.value) {
-    next({ name: 'GymDashboard' });
+    // Redirigir según el tipo de usuario
+    if (isSuperadmin.value) {
+      next({ name: 'GymDashboard' });
+    } else {
+      next({ name: 'GymVentas' });
+    }
     return;
   }
 

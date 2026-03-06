@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark shadow" style="background-color: #224a9d;">
+  <nav class="navbar navbar-expand-lg navbar-dark shadow fixed-top" style="background-color: #224a9d;">
     <div class="container-fluid">
       <router-link class="navbar-brand fw-bold" to="/gym/dashboard">
         <i class="fa-solid fa-dumbbell me-2"></i>
@@ -15,7 +15,7 @@
       </button>
       <div class="collapse navbar-collapse" :class="{ show: menuOpen }">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
+          <li class="nav-item" v-if="isSuperadmin">
             <router-link 
               to="/gym/dashboard" 
               class="nav-link px-3" 
@@ -171,6 +171,14 @@ const handleLogout = () => {
 <style scoped>
 .navbar-brand {
   font-size: 1.25rem;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1050;
 }
 
 .nav-link {

@@ -11,92 +11,22 @@
       </div>
 
       <!-- Filtros -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <div class="row g-3">
-            <div v-if="isSuperadmin" class="col-md-3">
-              <label class="form-label">Sucursal</label>
-              <select v-model="filtroSucursal" class="form-select">
-                <option :value="null">Todas</option>
-                <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-                  {{ sucursal.nombre }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Categoría</label>
-              <select v-model="filtroCategoria" class="form-select">
-                <option value="">Todas</option>
-                <option value="suplementos">Suplementos</option>
-                <option value="ropa">Ropa</option>
-                <option value="accesorios">Accesorios</option>
-                <option value="bebidas">Bebidas</option>
-                <option value="otros">Otros</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Estado</label>
-              <select v-model="filtroEstado" class="form-select">
-                <option value="">Todos</option>
-                <option value="activo">Activo</option>
-                <option value="inactivo">Inactivo</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FiltrosProductos
+        v-model:filtro-sucursal="filtroSucursal"
+        v-model:filtro-categoria="filtroCategoria"
+        v-model:filtro-estado="filtroEstado"
+        :sucursales="sucursales"
+        :is-superadmin="isSuperadmin"
+      />
 
       <!-- Tabla de productos -->
-      <div class="card">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Categoría</th>
-                  <th>Precio</th>
-                  <th>Stock</th>
-                  <th v-if="isSuperadmin">Sucursal</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="producto in productosFiltrados" :key="producto.id">
-                  <td>{{ producto.nombre }}</td>
-                  <td><span class="badge bg-secondary">{{ producto.categoria || 'N/A' }}</span></td>
-                  <td>${{ producto.precio.toFixed(2) }}</td>
-                  <td>
-                    <span :class="producto.stock < 10 ? 'text-danger fw-bold' : ''">
-                      {{ producto.stock }}
-                    </span>
-                  </td>
-                  <td v-if="isSuperadmin">
-                    {{ (producto.sucursal as any)?.nombre || 'N/A' }}
-                  </td>
-                  <td>
-                    <span :class="producto.estado === 'activo' ? 'badge bg-success' : 'badge bg-secondary'">
-                      {{ producto.estado }}
-                    </span>
-                  </td>
-                  <td>
-                    <button @click="editarProducto(producto)" class="btn btn-sm btn-outline-primary me-1">
-                      <i class="fa-solid fa-edit"></i>
-                    </button>
-                    <button @click="eliminarProducto(producto.id)" class="btn btn-sm btn-outline-danger">
-                      <i class="fa-solid fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr v-if="productosFiltrados.length === 0">
-                  <td :colspan="isSuperadmin ? 7 : 6" class="text-center text-muted">No hay productos</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <TablaProductos
+        :productos="productosFiltrados"
+        :is-superadmin="isSuperadmin"
+        :loading="loadingData"
+        @editar="editarProducto"
+        @eliminar="eliminarProducto"
+      />
 
       <!-- Modal de producto -->
       <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -174,16 +104,24 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { fetchProductos, createProducto, updateProducto, deleteProducto, fetchSucursales } from '@/services/gymApi';
 import { useAuth } from '@/composables/useAuth';
-import type { Producto, ProductoForm, Sucursal } from '@/types/gym';
-import Swal from 'sweetalert2';
+import { useProductos } from '@/composables/useProductos';
+import type { Producto, ProductoForm } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
+import FiltrosProductos from '@/components/productos/FiltrosProductos.vue';
+import TablaProductos from '@/components/productos/TablaProductos.vue';
 
 const { currentSucursalId, isSuperadmin } = useAuth();
+const {
+  productos,
+  sucursales,
+  loadingData,
+  loadProductos: loadProductosFromComposable,
+  loadSucursales,
+  guardarProducto: guardarProductoFromComposable,
+  eliminarProducto: eliminarProductoFromComposable
+} = useProductos();
 
-const productos = ref<Producto[]>([]);
-const sucursales = ref<Sucursal[]>([]);
 const showModal = ref(false);
 const productoEditando = ref<Producto | null>(null);
 const loading = ref(false);
@@ -225,31 +163,19 @@ watch(filtroSucursal, () => {
   loadProductos();
 });
 
-onMounted(() => {
+onMounted(async () => {
   if (isSuperadmin.value) {
-    loadSucursales();
+    await loadSucursales();
   }
-  loadProductos();
+  await loadProductos();
 });
-
-const loadSucursales = async () => {
-  const { data } = await fetchSucursales();
-  if (data) {
-    sucursales.value = data;
-  }
-};
 
 const loadProductos = async () => {
   const sucursalId = isSuperadmin.value 
     ? (filtroSucursal.value || null) 
     : currentSucursalId.value;
   
-  const { data, error } = await fetchProductos(sucursalId);
-  if (error) {
-    Swal.fire('Error', error.message, 'error');
-    return;
-  }
-  productos.value = data || [];
+  await loadProductosFromComposable(sucursalId);
 };
 
 const editarProducto = (producto: Producto) => {
@@ -301,61 +227,34 @@ const guardarProducto = async () => {
   loading.value = true;
   errorMessage.value = '';
 
-  try {
-    const sucursalId = isSuperadmin.value 
-      ? sucursalSeleccionada.value! 
-      : currentSucursalId.value!;
-    
-    if (productoEditando.value) {
-      const updateData: any = { ...formProducto.value };
-      if (isSuperadmin.value) {
-        updateData.sucursal_id = sucursalId;
-      }
-      const { error } = await updateProducto(productoEditando.value.id, updateData);
-      if (error) {
-        errorMessage.value = error.message;
-        return;
-      }
-      Swal.fire('Éxito', 'Producto actualizado correctamente', 'success');
-    } else {
-      const { error } = await createProducto({
-        ...formProducto.value,
-        sucursal_id: sucursalId
-      });
-      if (error) {
-        errorMessage.value = error.message;
-        return;
-      }
-      Swal.fire('Éxito', 'Producto creado correctamente', 'success');
-    }
-    
-    cerrarModal();
-    loadProductos();
-  } catch (error: any) {
-    errorMessage.value = error.message || 'Error al guardar producto';
-  } finally {
+  const sucursalId = isSuperadmin.value 
+    ? sucursalSeleccionada.value! 
+    : currentSucursalId.value!;
+  
+  const result = await guardarProductoFromComposable(
+    formProducto.value,
+    sucursalId,
+    productoEditando.value?.id
+  );
+
+  if (result?.error) {
+    errorMessage.value = result.error.message;
     loading.value = false;
+    return;
   }
+
+  if (result?.success) {
+    cerrarModal();
+    await loadProductos();
+  }
+  
+  loading.value = false;
 };
 
 const eliminarProducto = async (id: number) => {
-  const result = await Swal.fire({
-    title: '¿Estás seguro?',
-    text: 'Esta acción no se puede deshacer',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (result.isConfirmed) {
-    const { error } = await deleteProducto(id);
-    if (error) {
-      Swal.fire('Error', error.message, 'error');
-      return;
-    }
-    Swal.fire('Éxito', 'Producto eliminado correctamente', 'success');
-    loadProductos();
+  const result = await eliminarProductoFromComposable(id);
+  if (result?.success) {
+    await loadProductos();
   }
 };
 </script>

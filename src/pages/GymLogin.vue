@@ -125,8 +125,13 @@ const handleLogin = async () => {
       try {
         saveSession(userData);
         
-        // Redirigir al dashboard
-        await router.push('/gym/dashboard');
+        // Redirigir según el tipo de usuario
+        const { isSuperadmin } = useAuth();
+        if (isSuperadmin.value) {
+          await router.push('/gym/dashboard');
+        } else {
+          await router.push('/gym/ventas');
+        }
       } catch (saveError) {
         console.error('Error al guardar sesión:', saveError);
         errorMessage.value = 'Error al guardar sesión. Por favor, intenta nuevamente.';

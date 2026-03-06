@@ -22,6 +22,27 @@
         <h1 class="h3 mb-0">Dashboard</h1>
       </div>
 
+      <!-- Selector de sucursal (solo para superadmin) -->
+      <div v-if="isSuperadmin" class="card mb-4">
+        <div class="card-body">
+          <div class="row align-items-end">
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Filtrar por Sucursal:</label>
+              <select 
+                v-model="sucursalSeleccionada" 
+                @change="loadStats" 
+                class="form-select"
+              >
+                <option :value="null">Todas</option>
+                <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
+                  {{ sucursal.nombre }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Estadísticas rápidas -->
       <div class="row g-3 mb-4">
         <div class="col-md-3">
@@ -38,6 +59,25 @@
                 </div>
                 <div class="text-primary">
                   <i class="fa-solid fa-shopping-cart fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div 
+            @click="stats.ventasPendientes > 0 ? navegarAVentas('hoy', 'pendiente') : null" 
+            :class="['card border-0 shadow-sm h-100', stats.ventasPendientes > 0 ? 'hover-card' : 'opacity-50']" 
+            :style="stats.ventasPendientes > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'"
+          >
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="text-muted mb-1">Ventas Pendientes</h6>
+                  <h3 class="mb-0 text-warning">{{ stats.ventasPendientes }}</h3>
+                </div>
+                <div class="text-warning">
+                  <i class="fa-solid fa-exclamation-circle fa-2x"></i>
                 </div>
               </div>
             </div>
@@ -81,6 +121,8 @@
             </div>
           </div>
         </div>
+      </div>
+      <div class="row g-3 mb-4">
         <div class="col-md-3">
           <div 
             @click="stats.membresiasVencidas > 0 ? navegarAMembresias({ estado: 'vencida' }) : null" 
@@ -100,22 +142,16 @@
             </div>
           </div>
         </div>
-      </div>
-      <div class="row g-3 mb-4">
         <div class="col-md-3">
-          <div 
-            @click="stats.ventasPendientes > 0 ? navegarAVentas('hoy', 'pendiente') : null" 
-            :class="['card border-0 shadow-sm h-100', stats.ventasPendientes > 0 ? 'hover-card' : 'opacity-50']" 
-            :style="stats.ventasPendientes > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'"
-          >
+          <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 class="text-muted mb-1">Ventas Pendientes</h6>
-                  <h3 class="mb-0 text-danger">{{ stats.ventasPendientes }}</h3>
+                  <h6 class="text-muted mb-1">Total Clientes</h6>
+                  <h3 class="mb-0">{{ stats.clientes }}</h3>
                 </div>
-                <div class="text-danger">
-                  <i class="fa-solid fa-exclamation-circle fa-2x"></i>
+                <div class="text-info">
+                  <i class="fa-solid fa-user-group fa-2x"></i>
                 </div>
               </div>
             </div>
@@ -190,12 +226,16 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { useGymFilters } from '@/composables/useGymFilters';
-import { fetchVentas, fetchMembresias, fetchPagosMembresiaConFiltros, fetchClientes } from '@/services/gymApi';
+import { fetchVentas, fetchMembresias, fetchPagosMembresiaConFiltros, fetchClientes, fetchSucursales } from '@/services/gymApi';
+import type { Sucursal } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
 
 const router = useRouter();
 const { currentSucursalId, isSuperadmin, isAuthenticated } = useAuth();
 const { setFilters } = useGymFilters();
+
+const sucursales = ref<Sucursal[]>([]);
+const sucursalSeleccionada = ref<number | null>(null);
 
 const stats = ref({
   ventasHoy: 0,
@@ -248,6 +288,14 @@ onMounted(async () => {
       return;
     }
     
+    // Cargar sucursales si es superadmin
+    if (isSuperadmin.value) {
+      const { data } = await fetchSucursales();
+      if (data) {
+        sucursales.value = data;
+      }
+    }
+    
     await loadStats();
   } catch (err: any) {
     console.error('Error al cargar dashboard:', err);
@@ -259,26 +307,39 @@ onMounted(async () => {
 
 const loadStats = async () => {
   try {
-    const hoy = new Date().toISOString().split('T')[0];
+    // Calcular el rango completo del día de hoy con hora
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const hoyInicio = hoy.toISOString(); // Incluye hora: "2026-04-03T00:00:00.000Z"
     
-    // Ventas de hoy (productos + pagos de membresías)
+    const hoyFin = new Date(hoy);
+    hoyFin.setHours(23, 59, 59, 999);
+    const hoyFinStr = hoyFin.toISOString(); // Incluye hora: "2026-04-03T23:59:59.999Z"
+    
+    // Determinar la sucursal a usar para filtrar
+    const sucursalId = isSuperadmin.value 
+      ? (sucursalSeleccionada.value || null)
+      : currentSucursalId.value;
+    
+    // Usar directamente fetchVentas y fetchPagosMembresiaConFiltros con el rango completo del día
+    // para asegurar que se incluyan todas las ventas
     const { data: ventas, error: ventasError } = await fetchVentas(
-      isSuperadmin.value ? null : currentSucursalId.value,
+      sucursalId,
       undefined,
-      hoy,
-      hoy
+      hoyInicio,
+      hoyFinStr
     );
     
-    // Pagos de membresías de hoy
-    const { data: pagosMembresia } = await fetchPagosMembresiaConFiltros(
-      isSuperadmin.value ? null : currentSucursalId.value,
+    const { data: pagosMembresia, error: pagosError } = await fetchPagosMembresiaConFiltros(
+      sucursalId,
       undefined,
-      hoy,
-      hoy
+      hoyInicio,
+      hoyFinStr
     );
     
-    if (ventasError) {
-      console.error('Error al cargar ventas:', ventasError);
+    if (ventasError || pagosError) {
+      console.error('Error al cargar ventas:', ventasError || pagosError);
+      stats.value.ventasHoy = 0;
     } else {
       // Contar ventas de productos
       const ventasProductos = ventas?.length || 0;
@@ -290,7 +351,7 @@ const loadStats = async () => {
 
     // Cargar TODAS las ventas pendientes (sin filtro de fecha)
     const { data: todasLasVentas, error: ventasPendientesError } = await fetchVentas(
-      isSuperadmin.value ? null : currentSucursalId.value,
+      sucursalId,
       undefined,
       undefined,
       undefined
@@ -305,7 +366,7 @@ const loadStats = async () => {
 
     // Membresías
     const { data: membresias, error: membresiasError } = await fetchMembresias(
-      isSuperadmin.value ? null : currentSucursalId.value
+      sucursalId
     );
     
     if (membresiasError) {
@@ -355,7 +416,7 @@ const loadStats = async () => {
 
     // Clientes
     const { data: clientes, error: clientesError } = await fetchClientes(
-      isSuperadmin.value ? null : currentSucursalId.value
+      sucursalId
     );
     
     if (clientesError) {

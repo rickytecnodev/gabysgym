@@ -11,193 +11,39 @@
       </div>
 
       <!-- Filtros -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <!-- Botones de filtro rápido -->
-          <div class="mb-3">
-            <label class="form-label fw-bold">Filtro Rápido:</label>
-            <div class="btn-group" role="group">
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'hoy' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('hoy')"
-              >
-                Hoy
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'semana' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('semana')"
-              >
-                Semana Actual
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'mes' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('mes')"
-              >
-                Mes Actual
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'año' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('año')"
-              >
-                Año Actual
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm btn-outline-secondary"
-                @click="limpiarPeriodo"
-                v-if="periodoActivo"
-              >
-                Limpiar
-              </button>
-            </div>
-          </div>
-          <div class="row g-3">
-            <div v-if="isSuperadmin" class="col-md-3">
-              <label class="form-label">Sucursal</label>
-              <select v-model="filtroSucursal" class="form-select">
-                <option :value="null">Todas</option>
-                <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-                  {{ sucursal.nombre }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Fecha Desde</label>
-              <input v-model="filtroFechaDesde" type="date" class="form-control" :disabled="!!periodoActivo">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Fecha Hasta</label>
-              <input v-model="filtroFechaHasta" type="date" class="form-control" :disabled="!!periodoActivo">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Estado</label>
-              <select v-model="filtroEstado" class="form-select">
-                <option value="">Todos</option>
-                <option value="pagado">Pagado</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="cancelado">Cancelado</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FiltrosVentas
+        v-model:filtro-sucursal="filtroSucursal"
+        v-model:filtro-fecha-desde="filtroFechaDesde"
+        v-model:filtro-fecha-hasta="filtroFechaHasta"
+        v-model:filtro-estado="filtroEstado"
+        :periodo-activo="periodoActivo"
+        :sucursales="sucursales"
+        :is-superadmin="isSuperadmin"
+        @aplicar-periodo="aplicarPeriodo"
+        @limpiar-periodo="limpiarPeriodo"
+      />
 
       <!-- Tabs y Tablas de ventas -->
-      <div class="card">
-        <div class="card-body">
-          <!-- Tabs -->
-          <ul class="nav nav-tabs mb-3" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button 
-                class="nav-link" 
-                :class="{ active: tabActivo === 'productos' }"
-                @click="tabActivo = 'productos'"
-                type="button"
-              >
-                Productos
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button 
-                class="nav-link" 
-                :class="{ active: tabActivo === 'membresias' }"
-                @click="tabActivo = 'membresias'"
-                type="button"
-              >
-                Membresías
-              </button>
-            </li>
-          </ul>
-
-          <!-- Tab: Productos -->
-          <div v-show="tabActivo === 'productos'" class="tab-content">
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Cliente</th>
-                    <th>Total</th>
-                    <th>Estado</th>
-                    <th>Empleado</th>
-                    <th v-if="isSuperadmin && !filtroSucursal">Sucursal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr 
-                    v-for="venta in ventasFiltradas" 
-                    :key="'venta-' + venta.id"
-                    @click="verDetalleVenta(venta)"
-                    style="cursor: pointer;"
-                  >
-                    <td>{{ formatFecha(venta.fecha_venta) }}</td>
-                    <td>{{ venta.cliente?.nombre_completo || 'Cliente general' }}</td>
-                    <td class="fw-bold">${{ venta.total.toFixed(2) }}</td>
-                    <td>
-                      <span :class="getEstadoBadgeClass(venta.estado_pago)">
-                        {{ venta.estado_pago }}
-                      </span>
-                    </td>
-                    <td>{{ venta.empleado?.nombre_completo }}</td>
-                    <td v-if="isSuperadmin && !filtroSucursal">
-                      {{ (venta.sucursal as any)?.nombre || 'N/A' }}
-                    </td>
-                  </tr>
-                  <tr v-if="ventasFiltradas.length === 0">
-                    <td :colspan="isSuperadmin && !filtroSucursal ? 6 : 5" class="text-center text-muted">No hay ventas de productos</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Tab: Membresías -->
-          <div v-show="tabActivo === 'membresias'" class="tab-content">
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Cliente</th>
-                    <th>Monto</th>
-                    <th>Mes Pagado</th>
-                    <th>Empleado</th>
-                    <th v-if="isSuperadmin && !filtroSucursal">Sucursal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr 
-                    v-for="pago in pagosMembresiaFiltrados" 
-                    :key="'pago-' + pago.id"
-                    @click="verDetalleMembresia(pago)"
-                    style="cursor: pointer;"
-                  >
-                    <td>{{ formatFecha(pago.fecha_pago) }}</td>
-                    <td>{{ pago.membresia?.cliente?.nombre_completo || 'N/A' }}</td>
-                    <td class="fw-bold">${{ pago.monto.toFixed(2) }}</td>
-                    <td>{{ pago.mes_pagado }}</td>
-                    <td>{{ pago.empleado?.nombre_completo }}</td>
-                    <td v-if="isSuperadmin && !filtroSucursal">
-                      {{ (pago.membresia?.sucursal as any)?.nombre || 'N/A' }}
-                    </td>
-                  </tr>
-                  <tr v-if="pagosMembresiaFiltrados.length === 0">
-                    <td :colspan="isSuperadmin && !filtroSucursal ? 6 : 5" class="text-center text-muted">No hay pagos de membresías</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TabsVentas :tab-activo="tabActivo" @cambiar-tab="tabActivo = $event">
+        <template #productos>
+          <TablaVentasProductos
+            :ventas="ventasFiltradas"
+            :is-superadmin="isSuperadmin"
+            :filtro-sucursal="filtroSucursal"
+            :loading="loadingDataVentas"
+            @ver-detalle="verDetalleVenta"
+          />
+        </template>
+        <template #membresias>
+          <TablaPagosMembresia
+            :pagos="pagosMembresiaFiltrados"
+            :is-superadmin="isSuperadmin"
+            :filtro-sucursal="filtroSucursal"
+            :loading="loadingDataVentas"
+            @ver-detalle="verDetalleMembresia"
+          />
+        </template>
+      </TabsVentas>
 
       <!-- Modal de nueva venta -->
       <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -330,8 +176,8 @@
                 <p><strong>Fecha:</strong> {{ formatFecha(ventaDetalle.fecha_venta) }}</p>
                 <p><strong>Cliente:</strong> {{ ventaDetalle.cliente?.nombre_completo || 'Cliente general' }}</p>
                 <p><strong>Empleado:</strong> {{ ventaDetalle.empleado?.nombre_completo }}</p>
-                <p><strong>Estado:</strong> 
-                  <span :class="getEstadoBadgeClass(ventaDetalle.estado_pago)">
+                  <p><strong>Estado:</strong> 
+                  <span :class="ventaDetalle.estado_pago === 'pagado' ? 'badge bg-success' : ventaDetalle.estado_pago === 'pendiente' ? 'badge bg-warning' : 'badge bg-danger'">
                     {{ ventaDetalle.estado_pago }}
                   </span>
                 </p>
@@ -401,7 +247,7 @@
                     <p><strong>Fecha Inicio:</strong> {{ formatFecha(pagoMembresiaDetalle.membresia.fecha_inicio) }}</p>
                     <p><strong>Fecha Vencimiento:</strong> {{ formatFecha(pagoMembresiaDetalle.membresia.fecha_vencimiento) }}</p>
                     <p><strong>Estado:</strong> 
-                      <span :class="getEstadoBadgeClass(pagoMembresiaDetalle.membresia.estado)">
+                      <span :class="pagoMembresiaDetalle.membresia.estado === 'activa' ? 'badge bg-success' : pagoMembresiaDetalle.membresia.estado === 'vencida' ? 'badge bg-danger' : 'badge bg-secondary'">
                         {{ pagoMembresiaDetalle.membresia.estado }}
                       </span>
                     </p>
@@ -435,21 +281,35 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { fetchVentas, createVenta, updateVentaEstado, fetchProductos, fetchClientes, fetchSucursales, fetchPagosMembresiaConFiltros } from '@/services/gymApi';
 import { useAuth } from '@/composables/useAuth';
 import { useGymFilters } from '@/composables/useGymFilters';
-import type { Venta, Producto, Cliente, VentaForm, Sucursal, PagoMembresia } from '@/types/gym';
+import { useVentas } from '@/composables/useVentas';
+import type { Venta, VentaForm, PagoMembresia } from '@/types/gym';
 import Swal from 'sweetalert2';
 import GymNavbar from '@/components/GymNavbar.vue';
+import FiltrosVentas from '@/components/ventas/FiltrosVentas.vue';
+import TabsVentas from '@/components/ventas/TabsVentas.vue';
+import TablaVentasProductos from '@/components/ventas/TablaVentasProductos.vue';
+import TablaPagosMembresia from '@/components/ventas/TablaPagosMembresia.vue';
 
 const { currentSucursalId, currentUser, isSuperadmin } = useAuth();
 const { getFilters, clearFilters } = useGymFilters();
+const {
+  ventas,
+  pagosMembresia,
+  productosDisponibles,
+  clientes,
+  sucursales,
+  loadingData: loadingDataVentas,
+  loadVentas: loadVentasFromComposable,
+  loadPagosMembresia: loadPagosMembresiaFromComposable,
+  loadProductos,
+  loadClientes,
+  loadSucursales,
+  guardarVenta: guardarVentaFromComposable,
+  marcarPagado: marcarPagadoFromComposable
+} = useVentas();
 
-const ventas = ref<Venta[]>([]);
-const pagosMembresia = ref<PagoMembresia[]>([]);
-const productosDisponibles = ref<Producto[]>([]);
-const clientes = ref<Cliente[]>([]);
-const sucursales = ref<Sucursal[]>([]);
 const showModal = ref(false);
 const showDetalleModal = ref(false);
 const showDetalleMembresiaModal = ref(false);
@@ -501,7 +361,8 @@ const totalVenta = computed(() => {
 });
 
 // Watchers para hacer los filtros reactivos
-watch([filtroFechaDesde, filtroFechaHasta, filtroEstado, filtroSucursal], () => {
+// Solo recargar del servidor cuando cambia la sucursal o las fechas (necesita datos diferentes)
+watch([filtroFechaDesde, filtroFechaHasta, filtroSucursal], () => {
   loadVentas();
 });
 
@@ -509,39 +370,34 @@ watch(periodoActivo, () => {
   loadVentas();
 });
 
-onMounted(() => {
-  // Leer filtros desde el composable
+// El filtro de estado se hace en el cliente (computed)
+
+onMounted(async () => {
   const filters = getFilters();
   
   if (filters) {
     if (filters.periodo) {
       periodoActivo.value = filters.periodo;
-      aplicarPeriodo(filters.periodo, false);
+      aplicarPeriodo(filters.periodo);
     }
     
     if (filters.estado) {
       filtroEstado.value = filters.estado;
     }
     
-    // Limpiar filtros después de usarlos
     clearFilters();
   }
   
-  loadVentas();
-  loadProductos();
-  loadClientes();
+  await loadVentas();
+  const sucursalId = isSuperadmin.value ? null : currentSucursalId.value;
+  await loadProductos(sucursalId);
+  await loadClientes(sucursalId);
   
   if (isSuperadmin.value) {
-    loadSucursales();
+    await loadSucursales();
   }
 });
 
-const loadSucursales = async () => {
-  const { data } = await fetchSucursales();
-  if (data) {
-    sucursales.value = data;
-  }
-};
 
 const calcularFechasPeriodo = (periodo: string) => {
   const hoy = new Date();
@@ -577,7 +433,7 @@ const calcularFechasPeriodo = (periodo: string) => {
   };
 };
 
-const aplicarPeriodo = (periodo: string, recargar = true) => {
+const aplicarPeriodo = (periodo: string) => {
   periodoActivo.value = periodo;
   const fechas = calcularFechasPeriodo(periodo);
   
@@ -585,9 +441,7 @@ const aplicarPeriodo = (periodo: string, recargar = true) => {
     filtroFechaDesde.value = fechas.desde;
     filtroFechaHasta.value = fechas.hasta;
     
-    if (recargar) {
-      loadVentas();
-    }
+    // El watcher de filtroFechaDesde/filtroFechaHasta ya recargará los datos
   }
 };
 
@@ -595,11 +449,10 @@ const limpiarPeriodo = () => {
   periodoActivo.value = '';
   filtroFechaDesde.value = '';
   filtroFechaHasta.value = '';
-  loadVentas();
+  // El watcher de filtroFechaDesde/filtroFechaHasta ya recargará los datos
 };
 
 const loadVentas = async () => {
-  // Si hay un período activo, usar esas fechas; si no, usar el rango manual
   let fechaDesde = filtroFechaDesde.value;
   let fechaHasta = filtroFechaHasta.value;
   
@@ -613,57 +466,25 @@ const loadVentas = async () => {
     ? (filtroSucursal.value || null) 
     : currentSucursalId.value;
   
-  // Cargar ventas de productos
-  const { data, error } = await fetchVentas(
+  await loadVentasFromComposable(
     sucursalId,
-    undefined,
     fechaDesde || undefined,
     fechaHasta || undefined
   );
-  if (error) {
-    Swal.fire('Error', error.message, 'error');
-    return;
-  }
-  ventas.value = data || [];
   
-  // Cargar pagos de membresías
-  const { data: pagosData, error: pagosError } = await fetchPagosMembresiaConFiltros(
+  await loadPagosMembresiaFromComposable(
     sucursalId,
-    undefined,
     fechaDesde || undefined,
     fechaHasta || undefined
   );
-  if (pagosError) {
-    console.error('Error al cargar pagos de membresías:', pagosError);
-  } else {
-    pagosMembresia.value = pagosData || [];
-  }
-};
-
-const loadProductos = async () => {
-  const { data } = await fetchProductos(
-    isSuperadmin.value ? null : currentSucursalId.value
-  );
-  if (data) {
-    productosDisponibles.value = data.filter(p => p.estado === 'activo');
-  }
-};
-
-const loadClientes = async () => {
-  const sucursalId = isSuperadmin.value 
-    ? (sucursalSeleccionada.value || null) 
-    : currentSucursalId.value;
-  const { data } = await fetchClientes(sucursalId);
-  if (data) {
-    clientes.value = data;
-  }
 };
 
 // Watcher para recargar clientes cuando cambia la sucursal seleccionada (solo para superadmin)
 watch(sucursalSeleccionada, () => {
   if (isSuperadmin.value) {
-    loadClientes();
-    loadProductos();
+    const sucursalId = sucursalSeleccionada.value || null;
+    loadClientes(sucursalId);
+    loadProductos(sucursalId);
   }
 });
 
@@ -712,7 +533,6 @@ const guardarVenta = async () => {
     return;
   }
 
-  // Determinar la sucursal a usar
   const sucursalId = isSuperadmin.value 
     ? sucursalSeleccionada.value 
     : currentSucursalId.value;
@@ -732,31 +552,32 @@ const guardarVenta = async () => {
   loading.value = true;
   errorMessage.value = '';
 
-  try {
-    const { error } = await createVenta({
+  const result = await guardarVentaFromComposable(
+    {
       ...formVenta.value,
       productos: productosVenta.value.map(p => ({
         producto_id: p.producto_id,
         cantidad: p.cantidad
-      })),
-      sucursal_id: sucursalId,
-      empleado_id: currentUser.value.id
-    });
+      }))
+    },
+    sucursalId,
+    currentUser.value.id
+  );
 
-    if (error) {
-      errorMessage.value = error.message;
-      return;
-    }
-
-    Swal.fire('Éxito', 'Venta registrada correctamente', 'success');
-    cerrarModal();
-    loadVentas();
-    loadProductos();
-  } catch (error: any) {
-    errorMessage.value = error.message || 'Error al guardar venta';
-  } finally {
+  if (result?.error) {
+    errorMessage.value = result.error.message;
     loading.value = false;
+    return;
   }
+
+  if (result?.success) {
+    cerrarModal();
+    await loadVentas();
+    const sucursalIdForProducts = isSuperadmin.value ? null : currentSucursalId.value;
+    await loadProductos(sucursalIdForProducts);
+  }
+  
+  loading.value = false;
 };
 
 const verDetalleVenta = (venta: Venta) => {
@@ -773,42 +594,15 @@ const verDetalleMembresia = (pago: PagoMembresia) => {
 const marcarPagadoDesdeDetalle = async () => {
   if (!ventaDetalle.value) return;
   
-  const result = await Swal.fire({
-    title: '¿Marcar como pagado?',
-    text: `¿Estás seguro de marcar la venta #${ventaDetalle.value.id} como pagada?`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, marcar',
-    cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#28a745'
-  });
-
-  if (result.isConfirmed) {
-    const { error } = await updateVentaEstado(ventaDetalle.value.id, 'pagado');
-    if (error) {
-      Swal.fire('Error', error.message, 'error');
-      return;
-    }
-    Swal.fire('Éxito', 'Venta marcada como pagada', 'success');
+  const result = await marcarPagadoFromComposable(ventaDetalle.value.id);
+  if (result?.success) {
     showDetalleModal.value = false;
-    loadVentas();
+    await loadVentas();
   }
 };
 
 const formatFecha = (fecha: string) => {
   return new Date(fecha).toLocaleDateString('es-MX');
-};
-
-const getEstadoBadgeClass = (estado: string) => {
-  const clases: Record<string, string> = {
-    pagado: 'badge bg-success',
-    pendiente: 'badge bg-warning',
-    cancelado: 'badge bg-danger',
-    activa: 'badge bg-success',
-    vencida: 'badge bg-danger',
-    cancelada: 'badge bg-secondary'
-  };
-  return clases[estado] || 'badge bg-secondary';
 };
 </script>
 

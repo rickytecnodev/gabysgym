@@ -11,87 +11,22 @@
       </div>
 
       <!-- Filtros -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-4" v-if="isSuperadmin">
-              <label class="form-label">Sucursal</label>
-              <select v-model="filtroSucursal" class="form-select">
-                <option value="">Todas</option>
-                <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-                  {{ sucursal.nombre }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Buscar</label>
-              <input 
-                v-model="busqueda" 
-                type="text" 
-                class="form-control" 
-                placeholder="Nombre, teléfono o email..."
-                @input="filtrarClientes"
-              >
-            </div>
-          </div>
-        </div>
-      </div>
+      <FiltrosClientes
+        v-model:filtro-sucursal="filtroSucursal"
+        v-model:busqueda="busqueda"
+        :sucursales="sucursales"
+        :is-superadmin="isSuperadmin"
+      />
 
       <!-- Tabla de clientes -->
-      <div class="card">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th v-if="isSuperadmin">Sucursal</th>
-                  <th>Membresías</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr 
-                  v-for="cliente in clientesFiltrados" 
-                  :key="cliente.id"
-                  @click="verDetalleCliente(cliente)"
-                  style="cursor: pointer;"
-                >
-                  <td>
-                    <div class="fw-bold">{{ cliente.nombre_completo }}</div>
-                    <small class="text-muted" v-if="cliente.email">{{ cliente.email }}</small>
-                  </td>
-                  <td v-if="isSuperadmin">
-                    {{ cliente.sucursal?.nombre || 'N/A' }}
-                  </td>
-                  <td>
-                    <div v-if="cliente.membresias_activas > 0">
-                      <span class="badge bg-success me-1">
-                        {{ cliente.membresias_activas }} activa(s)
-                      </span>
-                      <div v-if="cliente.fecha_vencimiento_activa" class="small text-muted mt-1">
-                        Vence: {{ formatFecha(cliente.fecha_vencimiento_activa) }}
-                      </div>
-                    </div>
-                    <span v-else class="text-muted">Sin membresías</span>
-                  </td>
-                  <td @click.stop>
-                    <button @click="editarCliente(cliente)" class="btn btn-sm btn-outline-primary me-1" title="Editar">
-                      <i class="fa-solid fa-edit"></i>
-                    </button>
-                    <button @click="eliminarCliente(cliente)" class="btn btn-sm btn-outline-danger" title="Eliminar">
-                      <i class="fa-solid fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr v-if="clientesFiltrados.length === 0">
-                  <td :colspan="isSuperadmin ? 4 : 3" class="text-center text-muted">No hay clientes</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <TablaClientes
+        :clientes="clientesFiltrados"
+        :is-superadmin="isSuperadmin"
+        :loading="loadingDataClientes"
+        @ver-detalle="verDetalleCliente"
+        @editar="editarCliente"
+        @eliminar="eliminarCliente"
+      />
 
       <!-- Modal de detalle de cliente -->
       <div v-if="showDetalleModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -128,12 +63,12 @@
                 </div>
                 <hr>
                 <h6>Membresías</h6>
-                <div v-if="clienteDetalle.membresias_activas > 0">
+                <div v-if="(clienteDetalle as any).membresias_activas && (clienteDetalle as any).membresias_activas > 0">
                   <span class="badge bg-success me-1">
-                    {{ clienteDetalle.membresias_activas }} activa(s)
+                    {{ (clienteDetalle as any).membresias_activas }} activa(s)
                   </span>
-                  <div v-if="clienteDetalle.fecha_vencimiento_activa" class="mt-2">
-                    <strong>Próxima fecha de vencimiento:</strong> {{ formatFecha(clienteDetalle.fecha_vencimiento_activa) }}
+                  <div v-if="(clienteDetalle as any).fecha_vencimiento_activa" class="mt-2">
+                    <strong>Próxima fecha de vencimiento:</strong> {{ formatFecha((clienteDetalle as any).fecha_vencimiento_activa) }}
                   </div>
                 </div>
                 <p v-else class="text-muted">Sin membresías activas</p>
@@ -203,26 +138,28 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { fetchClientes, createCliente, updateCliente, deleteCliente, fetchSucursales, fetchMembresias } from '@/services/gymApi';
 import { useAuth } from '@/composables/useAuth';
-import type { Cliente, ClienteForm, Sucursal } from '@/types/gym';
-
-// Tipo extendido para clientes con información de membresías
-interface ClienteConMembresias extends Cliente {
-  membresias_activas?: number;
-  fecha_vencimiento_activa?: string | null;
-}
-import Swal from 'sweetalert2';
+import { useClientes } from '@/composables/useClientes';
+import type { Cliente, ClienteForm } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
+import FiltrosClientes from '@/components/clientes/FiltrosClientes.vue';
+import TablaClientes from '@/components/clientes/TablaClientes.vue';
 
 const { currentSucursalId, isSuperadmin } = useAuth();
+const {
+  clientes,
+  sucursales,
+  loadingData: loadingDataClientes,
+  loadClientes: loadClientesFromComposable,
+  loadSucursales,
+  guardarCliente: guardarClienteFromComposable,
+  eliminarCliente: eliminarClienteFromComposable
+} = useClientes();
 
-const clientes = ref<ClienteConMembresias[]>([]);
-const sucursales = ref<Sucursal[]>([]);
 const showModal = ref(false);
 const showDetalleModal = ref(false);
 const clienteEditando = ref<Cliente | null>(null);
-const clienteDetalle = ref<ClienteConMembresias | null>(null);
+const clienteDetalle = ref<Cliente | null>(null);
 const loading = ref(false);
 const errorMessage = ref('');
 const busqueda = ref('');
@@ -253,61 +190,21 @@ const clientesFiltrados = computed(() => {
   return filtrados;
 });
 
-// Watchers para hacer los filtros reactivos
 watch(filtroSucursal, () => {
   loadClientes();
 });
 
-onMounted(() => {
-  loadClientes();
+onMounted(async () => {
+  const sucursalId = isSuperadmin.value ? (filtroSucursal.value || null) : currentSucursalId.value;
+  await loadClientesFromComposable(sucursalId);
   if (isSuperadmin.value) {
-    loadSucursales();
+    await loadSucursales();
   }
 });
 
-const loadSucursales = async () => {
-  const { data } = await fetchSucursales();
-  if (data) {
-    sucursales.value = data;
-  }
-};
-
 const loadClientes = async () => {
   const sucursalId = isSuperadmin.value ? (filtroSucursal.value || null) : currentSucursalId.value;
-  const { data, error } = await fetchClientes(sucursalId);
-  
-  if (error) {
-    Swal.fire('Error', error.message, 'error');
-    return;
-  }
-  
-  if (data) {
-    // Cargar membresías para contar las activas por cliente
-    const { data: membresias } = await fetchMembresias(sucursalId);
-    
-    clientes.value = data.map(cliente => {
-      const membresiasDelCliente = membresias?.filter(m => 
-        m.cliente_id === cliente.id && m.estado === 'activa'
-      ) || [];
-      
-      // Obtener la fecha de vencimiento de la membresía activa más reciente
-      const membresiaActiva = membresiasDelCliente.length > 0 
-        ? membresiasDelCliente.sort((a, b) => 
-            new Date(b.fecha_vencimiento).getTime() - new Date(a.fecha_vencimiento).getTime()
-          )[0]
-        : null;
-      
-      return {
-        ...cliente,
-        membresias_activas: membresiasDelCliente.length,
-        fecha_vencimiento_activa: membresiaActiva?.fecha_vencimiento || null
-      };
-    });
-  }
-};
-
-const filtrarClientes = () => {
-  // El filtrado se hace automáticamente con el computed
+  await loadClientesFromComposable(sucursalId);
 };
 
 const abrirModalNuevo = () => {
@@ -364,72 +261,40 @@ const guardarCliente = async () => {
   loading.value = true;
   errorMessage.value = '';
 
-  try {
-    if (clienteEditando.value) {
-      // Editar cliente existente
-      const { error } = await updateCliente(clienteEditando.value.id, formCliente.value);
-      
-      if (error) {
-        errorMessage.value = error.message;
-        return;
-      }
-      
-      Swal.fire('Éxito', 'Cliente actualizado correctamente', 'success');
-    } else {
-      // Crear nuevo cliente
-      const { error } = await createCliente({
-        ...formCliente.value,
-        sucursal_id: currentSucursalId.value!
-      });
-      
-      if (error) {
-        errorMessage.value = error.message;
-        return;
-      }
-      
-      Swal.fire('Éxito', 'Cliente creado correctamente', 'success');
-    }
-    
-    cerrarModal();
-    loadClientes();
-  } catch (error: any) {
-    errorMessage.value = error.message || 'Error al guardar cliente';
-  } finally {
+  const sucursalId = currentSucursalId.value!;
+  const result = await guardarClienteFromComposable(
+    formCliente.value,
+    sucursalId,
+    clienteEditando.value?.id
+  );
+
+  if (result?.error) {
+    errorMessage.value = result.error.message;
     loading.value = false;
+    return;
   }
+
+  if (result?.success) {
+    cerrarModal();
+    await loadClientes();
+  }
+  
+  loading.value = false;
 };
 
 const eliminarCliente = async (cliente: Cliente) => {
-  const result = await Swal.fire({
-    title: '¿Eliminar cliente?',
-    text: `¿Estás seguro de eliminar a ${cliente.nombre_completo}? Esta acción no se puede deshacer y eliminará todas sus membresías asociadas.`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#dc3545'
-  });
-  
-  if (result.isConfirmed) {
-    const { error } = await deleteCliente(cliente.id);
-    
-    if (error) {
-      Swal.fire('Error', error.message, 'error');
-      return;
-    }
-    
-    Swal.fire('Éxito', 'Cliente eliminado correctamente', 'success');
-    
-    // Cerrar el modal de detalle si está abierto
+  const result = await eliminarClienteFromComposable(cliente);
+  if (result?.success) {
     if (showDetalleModal.value && clienteDetalle.value?.id === cliente.id) {
       showDetalleModal.value = false;
     }
-    
-    loadClientes();
+    await loadClientes();
   }
 };
 
 const formatFecha = (fecha: string) => {
   return new Date(fecha).toLocaleDateString('es-MX');
 };
+
+// El componente TablaClientes ya tiene formatFecha, pero lo mantenemos aquí para el modal de detalle
 </script>

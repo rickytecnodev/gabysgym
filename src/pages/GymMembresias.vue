@@ -11,223 +11,37 @@
       </div>
 
       <!-- Filtros -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <!-- Botones de filtro rápido -->
-          <div class="mb-3">
-            <label class="form-label fw-bold">Filtro Rápido:</label>
-            <div class="btn-group" role="group">
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'hoy' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('hoy')"
-              >
-                Hoy
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'semana' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('semana')"
-              >
-                Semana Actual
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'mes' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('mes')"
-              >
-                Mes Actual
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm"
-                :class="periodoActivo === 'año' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="aplicarPeriodo('año')"
-              >
-                Año Actual
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm btn-outline-secondary"
-                @click="limpiarPeriodo"
-                v-if="periodoActivo"
-              >
-                Limpiar
-              </button>
-            </div>
-          </div>
-          <div class="row g-3">
-            <div class="col-md-12" v-if="filtroClienteId">
-              <div class="alert alert-info d-flex justify-content-between align-items-center">
-                <span>
-                  <i class="fa-solid fa-filter me-2"></i>
-                  Filtrando por cliente: <strong>{{ getNombreCliente(filtroClienteId) }}</strong>
-                </span>
-                <button @click="limpiarFiltroCliente" class="btn btn-sm btn-outline-info">
-                  <i class="fa-solid fa-times me-1"></i>
-                  Limpiar filtro
-                </button>
-              </div>
-            </div>
-            <div v-if="isSuperadmin" class="col-md-3">
-              <label class="form-label">Sucursal</label>
-              <select v-model="filtroSucursal" class="form-select">
-                <option :value="null">Todas</option>
-                <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-                  {{ sucursal.nombre }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Fecha Desde</label>
-              <input v-model="filtroFechaDesde" type="date" class="form-control" :disabled="!!periodoActivo">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Fecha Hasta</label>
-              <input v-model="filtroFechaHasta" type="date" class="form-control" :disabled="!!periodoActivo">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Estado</label>
-              <select v-model="filtroEstado" class="form-select">
-                <option value="">Todos</option>
-                <option value="activa">Activa</option>
-                <option value="vencida">Vencida</option>
-                <option value="cancelada">Cancelada</option>
-              </select>
-            </div>
-            <div class="col-md-12 d-flex align-items-end gap-2">
-              <button @click="() => actualizarEstados()" class="btn btn-info">
-                <i class="fa-solid fa-sync me-1"></i>
-                Actualizar Estados
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FiltrosMembresias
+        v-model:filtro-sucursal="filtroSucursal"
+        v-model:filtro-fecha-desde="filtroFechaDesde"
+        v-model:filtro-fecha-hasta="filtroFechaHasta"
+        v-model:filtro-estado="filtroEstado"
+        :periodo-activo="periodoActivo"
+        :filtro-cliente-id="filtroClienteId"
+        :nombre-cliente="getNombreCliente(filtroClienteId)"
+        :sucursales="sucursales"
+        :is-superadmin="isSuperadmin"
+        @aplicar-periodo="aplicarPeriodo"
+        @limpiar-periodo="limpiarPeriodo"
+        @limpiar-filtro-cliente="limpiarFiltroCliente"
+        @actualizar-estados="actualizarEstados"
+      />
 
       <!-- Tabla de membresías -->
-      <div class="card">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Tipo</th>
-                  <th>Inicio</th>
-                  <th>Vencimiento</th>
-                  <th>Estado</th>
-                  <th v-if="isSuperadmin && !filtroSucursal">Sucursal</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr 
-                  v-for="membresia in membresiasFiltradas" 
-                  :key="membresia.id"
-                  :class="getRowClass(membresia)"
-                  @click="verDetalle(membresia)"
-                  style="cursor: pointer;"
-                >
-                  <td>
-                    <div>{{ membresia.cliente?.nombre_completo }}</div>
-                    <small class="text-muted">{{ membresia.cliente?.telefono }}</small>
-                  </td>
-                  <td>
-                    {{ membresia.tipo_membresia?.nombre || 'Personalizada' }}
-                    <span v-if="!membresia.tipo_membresia" class="badge bg-info ms-1">Promo</span>
-                  </td>
-                  <td>{{ formatFecha(membresia.fecha_inicio) }}</td>
-                  <td>
-                    <span :class="getVencimientoClass(membresia.fecha_vencimiento)">
-                      {{ formatFecha(membresia.fecha_vencimiento) }}
-                    </span>
-                  </td>
-                  <td>
-                    <span :class="getEstadoBadgeClass(membresia.estado)">
-                      {{ membresia.estado }}
-                    </span>
-                  </td>
-                  <td v-if="isSuperadmin && !filtroSucursal">
-                    {{ (membresia.sucursal as any)?.nombre || 'N/A' }}
-                  </td>
-                  <td @click.stop>
-                    <div class="d-flex flex-wrap gap-1">
-                      <!-- Grupo: Acciones (Pagar, WhatsApp, Cancelar/Reactivar) -->
-                      <div class="btn-group" role="group">
-                        <button 
-                          @click.stop="registrarPago(membresia)" 
-                          class="btn btn-sm btn-outline-success"
-                          :disabled="membresia.estado === 'cancelada'"
-                          :title="membresia.estado === 'cancelada' ? 'No se puede pagar una membresía cancelada' : 'Registrar pago'"
-                        >
-                          <i class="fa-solid fa-money-bill-wave"></i>
-                        </button>
-                        <button 
-                          @click.stop="enviarRecordatorio(membresia)" 
-                          class="btn btn-sm btn-outline-success"
-                          :disabled="(membresia.estado !== 'activa' && membresia.estado !== 'vencida') || !membresia.cliente?.whatsapp"
-                          :title="(membresia.estado !== 'activa' && membresia.estado !== 'vencida') ? 'Solo disponible para membresías activas o vencidas' : !membresia.cliente?.whatsapp ? 'El cliente no tiene WhatsApp' : 'Enviar recordatorio por WhatsApp'"
-                        >
-                          <i class="fa-brands fa-whatsapp"></i>
-                        </button>
-                        <button 
-                          v-if="membresia.estado === 'activa' || membresia.estado === 'vencida'"
-                          @click.stop="cancelarMembresia(membresia.id)" 
-                          class="btn btn-sm btn-outline-danger"
-                          title="Cancelar membresía"
-                        >
-                          <i class="fa-solid fa-ban"></i>
-                        </button>
-                        <button 
-                          v-if="membresia.estado === 'cancelada'"
-                          @click.stop="reactivarMembresia(membresia)" 
-                          class="btn btn-sm btn-outline-success"
-                          title="Reactivar membresía"
-                        >
-                          <i class="fa-solid fa-check-circle"></i>
-                        </button>
-                      </div>
-                      
-                      <!-- Grupo: Edición y Eliminación -->
-                      <div class="btn-group" role="group">
-                        <button 
-                          @click.stop="editarFechas(membresia)" 
-                          class="btn btn-sm btn-outline-primary"
-                          title="Editar fechas de membresía"
-                        >
-                          <i class="fa-solid fa-calendar-days"></i>
-                        </button>
-                        <button 
-                          @click.stop="editarCliente(membresia.cliente!)" 
-                          class="btn btn-sm btn-outline-primary"
-                          title="Editar cliente"
-                          :disabled="!membresia.cliente"
-                        >
-                          <i class="fa-solid fa-user-edit"></i>
-                        </button>
-                        <button 
-                          @click.stop="eliminarMembresia(membresia)" 
-                          class="btn btn-sm btn-outline-danger"
-                          title="Eliminar membresía"
-                        >
-                          <i class="fa-solid fa-trash"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="membresiasFiltradas.length === 0">
-                  <td :colspan="isSuperadmin && !filtroSucursal ? 7 : 6" class="text-center text-muted">No hay membresías</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <TablaMembresias
+        :membresias="membresiasFiltradas"
+        :is-superadmin="isSuperadmin"
+        :filtro-sucursal="filtroSucursal"
+        :loading="loadingDataMembresias"
+        @ver-detalle="verDetalle"
+        @registrar-pago="registrarPago"
+        @enviar-recordatorio="enviarRecordatorio"
+        @cancelar="cancelarMembresia"
+        @reactivar="reactivarMembresia"
+        @editar-fechas="editarFechas"
+        @editar-cliente="editarCliente"
+        @eliminar="eliminarMembresia"
+      />
 
       <!-- Modal de nueva membresía -->
       <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -607,31 +421,43 @@ import {
   fetchMembresias, 
   createMembresia, 
   updateMembresiaEstado,
-  fetchClientes,
-  fetchTiposMembresia,
   fetchPagosMembresia,
   createPagoMembresia,
   updateCliente,
-  updateMembresiaFechas,
-  fetchSucursales,
-  deleteMembresia
+  updateMembresiaFechas
 } from '@/services/gymApi';
 import { getWhatsAppRecordatorioUrl } from '@/utils/gymWhatsappService';
 import { useAuth } from '@/composables/useAuth';
 import { useGymFilters } from '@/composables/useGymFilters';
+import { useMembresias } from '@/composables/useMembresias';
 import { supabase } from '@/utils/supabase';
-import type { Membresia, Cliente, TipoMembresia, MembresiaForm, PagoMembresia, Sucursal } from '@/types/gym';
+import type { Membresia, Cliente, MembresiaForm } from '@/types/gym';
 import Swal from 'sweetalert2';
 import GymNavbar from '@/components/GymNavbar.vue';
+import FiltrosMembresias from '@/components/membresias/FiltrosMembresias.vue';
+import TablaMembresias from '@/components/membresias/TablaMembresias.vue';
 
 const { currentSucursalId, currentUser, isSuperadmin } = useAuth();
 const { getFilters, clearFilters } = useGymFilters();
+const {
+  membresias,
+  clientes,
+  tiposMembresia,
+  pagosMembresia,
+  sucursales,
+  loadingData: loadingDataMembresias,
+  normalizarFecha,
+  loadMembresias: loadMembresiasFromComposable,
+  loadSucursales,
+  loadClientes,
+  loadTiposMembresia,
+  loadPagosMembresia,
+  actualizarEstados: actualizarEstadosFromComposable,
+  cancelarMembresia: cancelarMembresiaFromComposable,
+  reactivarMembresia: reactivarMembresiaFromComposable,
+  eliminarMembresia: eliminarMembresiaFromComposable
+} = useMembresias();
 
-const membresias = ref<Membresia[]>([]);
-const clientes = ref<Cliente[]>([]);
-const tiposMembresia = ref<TipoMembresia[]>([]);
-const pagosMembresia = ref<PagoMembresia[]>([]);
-const sucursales = ref<Sucursal[]>([]);
 const showModal = ref(false);
 const showDetalleModal = ref(false);
 const showClienteModal = ref(false);
@@ -688,44 +514,19 @@ const formFechas = ref({
   fecha_vencimiento: ''
 });
 
-// Función helper para normalizar fechas a formato YYYY-MM-DD
-const normalizarFecha = (fecha: any): string | null => {
-  if (!fecha) return null;
-  
-  try {
-    if (typeof fecha === 'string') {
-      const fechaStr = fecha.trim();
-      // Extraer solo la parte de la fecha (YYYY-MM-DD)
-      if (fechaStr.includes('T')) {
-        return fechaStr.split('T')[0];
-      } else if (fechaStr.includes(' ')) {
-        return fechaStr.split(' ')[0];
-      } else if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
-        return fechaStr;
-      }
-    }
-    
-    // Si es un objeto Date o número (timestamp)
-    const fechaObj = new Date(fecha);
-    if (!isNaN(fechaObj.getTime())) {
-      const año = fechaObj.getFullYear();
-      const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
-      const dia = String(fechaObj.getDate()).padStart(2, '0');
-      return `${año}-${mes}-${dia}`;
-    }
-  } catch (e) {
-    console.error('Error al normalizar fecha:', fecha, e);
-  }
-  
-  return null;
-};
+// La función normalizarFecha ahora viene del composable
 
 const membresiasFiltradas = computed(() => {
-  let filtradas = membresias.value;
+  let filtradas = [...membresias.value];
   
   // Filtro por estado
   if (filtroEstado.value) {
     filtradas = filtradas.filter(m => m.estado === filtroEstado.value);
+  }
+  
+  // Filtro por cliente
+  if (filtroClienteId.value) {
+    filtradas = filtradas.filter(m => m.cliente_id === filtroClienteId.value);
   }
   
   // Filtro por rango de fechas (fecha de vencimiento)
@@ -767,17 +568,18 @@ const membresiasFiltradas = computed(() => {
 });
 
 // Watchers para hacer los filtros reactivos
-watch([filtroEstado, filtroFechaDesde, filtroFechaHasta, filtroClienteId, filtroSucursal], () => {
+// Solo recargar del servidor cuando cambia la sucursal (necesita datos diferentes)
+watch(filtroSucursal, () => {
   loadMembresias();
 });
 
-watch(periodoActivo, () => {
-  loadMembresias();
-});
+// Los filtros de estado, fechas y cliente se hacen en el cliente (computed)
+// No necesitamos recargar del servidor para estos filtros
 
 watch(filtroSucursal, () => {
   if (isSuperadmin.value) {
-    loadClientes();
+    const sucursalId = filtroSucursal.value || null;
+    loadClientes(sucursalId);
   }
 });
 
@@ -793,7 +595,7 @@ watch([() => formMembresia.value.fecha_inicio, () => formMembresia.value.tipo_me
   }
 });
 
-onMounted(() => {
+onMounted(async () => {
   // Leer filtros desde el composable
   const filters = getFilters();
   
@@ -811,23 +613,25 @@ onMounted(() => {
       filtroFechaHasta.value = filters.fechaHasta;
     } else if (filters.periodo) {
       periodoActivo.value = filters.periodo;
-      aplicarPeriodo(filters.periodo, false);
+      aplicarPeriodo(filters.periodo);
     }
     
     // Limpiar filtros después de usarlos
     clearFilters();
   }
   
-  loadMembresias();
-  loadClientes();
-  loadTiposMembresia();
+  await loadMembresias();
+  const sucursalId = isSuperadmin.value ? null : currentSucursalId.value;
+  await loadClientes(sucursalId);
+  await loadTiposMembresia();
   
   if (isSuperadmin.value) {
-    loadSucursales();
+    await loadSucursales();
   }
   
   // Actualizar estados silenciosamente al cargar (sin mostrar alerta)
-  actualizarEstados(false);
+  await actualizarEstadosFromComposable(false);
+  await loadMembresias();
 });
 
 const calcularFechasPeriodo = (periodo: string) => {
@@ -845,6 +649,12 @@ const calcularFechasPeriodo = (periodo: string) => {
     case 'semana':
       desde = new Date(hoy);
       desde.setDate(hoy.getDate() - hoy.getDay()); // Lunes de esta semana
+      break;
+    case 'siguiente-semana':
+      desde = new Date(hoy);
+      hasta = new Date(hoy);
+      hasta.setDate(hoy.getDate() + 7); // Hoy + 7 días
+      hasta.setHours(23, 59, 59, 999);
       break;
     case 'mes':
       desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -864,7 +674,7 @@ const calcularFechasPeriodo = (periodo: string) => {
   };
 };
 
-const aplicarPeriodo = (periodo: string, recargar = true) => {
+const aplicarPeriodo = (periodo: string) => {
   periodoActivo.value = periodo;
   const fechas = calcularFechasPeriodo(periodo);
   
@@ -872,9 +682,7 @@ const aplicarPeriodo = (periodo: string, recargar = true) => {
     filtroFechaDesde.value = fechas.desde;
     filtroFechaHasta.value = fechas.hasta;
     
-    if (recargar) {
-      loadMembresias();
-    }
+    // No recargar del servidor, el filtro se aplica en el cliente
   }
 };
 
@@ -882,12 +690,12 @@ const limpiarPeriodo = () => {
   periodoActivo.value = '';
   filtroFechaDesde.value = '';
   filtroFechaHasta.value = '';
-  loadMembresias();
+  // No recargar del servidor, solo limpiar filtros
 };
 
 const limpiarFiltroCliente = () => {
   filtroClienteId.value = null;
-  loadMembresias();
+  // No recargar del servidor, solo limpiar filtro
 };
 
 const getNombreCliente = (clienteId: number | null): string => {
@@ -904,41 +712,13 @@ const loadMembresias = async () => {
     ? (filtroSucursal.value || null) 
     : currentSucursalId.value;
   
-  const { data, error } = await fetchMembresias(
+  // Cargar todas las membresías de la sucursal (sin filtros de estado/cliente)
+  // Los filtros se aplican en el cliente mediante el computed
+  await loadMembresiasFromComposable(
     sucursalId,
-    filtroEstado.value || undefined,
-    filtroClienteId.value || undefined
+    undefined, // No filtrar por estado en el servidor
+    undefined  // No filtrar por cliente en el servidor
   );
-  if (error) {
-    Swal.fire('Error', error.message, 'error');
-    return;
-  }
-  membresias.value = data || [];
-};
-
-const loadSucursales = async () => {
-  const { data } = await fetchSucursales();
-  if (data) {
-    sucursales.value = data;
-  }
-};
-
-const loadClientes = async () => {
-  const sucursalId = isSuperadmin.value 
-    ? (filtroSucursal.value || null) 
-    : currentSucursalId.value;
-  
-  const { data } = await fetchClientes(sucursalId);
-  if (data) {
-    clientes.value = data;
-  }
-};
-
-const loadTiposMembresia = async () => {
-  const { data } = await fetchTiposMembresia();
-  if (data) {
-    tiposMembresia.value = data;
-  }
 };
 
 const onTipoMembresiaChange = () => {
@@ -984,26 +764,8 @@ const fechaVencimientoCalculada = computed(() => {
 
 
 const actualizarEstados = async (mostrarMensaje = true) => {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-
-  for (const membresia of membresias.value) {
-    if (membresia.estado === 'activa') {
-      const fechaVencimiento = new Date(membresia.fecha_vencimiento);
-      fechaVencimiento.setHours(0, 0, 0, 0);
-      
-      if (fechaVencimiento < hoy) {
-        await updateMembresiaEstado(membresia.id, 'vencida');
-      }
-    }
-  }
-
+  await actualizarEstadosFromComposable(mostrarMensaje);
   await loadMembresias();
-  
-  // Solo mostrar mensaje si se llama manualmente
-  if (mostrarMensaje) {
-    Swal.fire('Éxito', 'Estados actualizados', 'success');
-  }
 };
 
 const cerrarModal = () => {
@@ -1089,61 +851,21 @@ const guardarMembresia = async () => {
 
 const verDetalle = async (membresia: Membresia) => {
   membresiaDetalle.value = membresia;
-  const { data } = await fetchPagosMembresia(membresia.id);
-  if (data) {
-    pagosMembresia.value = data;
-  }
+  await loadPagosMembresia(membresia.id);
   showDetalleModal.value = true;
 };
 
 const cancelarMembresia = async (id: number) => {
-  const result = await Swal.fire({
-    title: '¿Cancelar membresía?',
-    text: 'La membresía se marcará como cancelada',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, cancelar',
-    cancelButtonText: 'No'
-  });
-
-  if (result.isConfirmed) {
-    const { error } = await updateMembresiaEstado(id, 'cancelada');
-    if (error) {
-      Swal.fire('Error', error.message, 'error');
-      return;
-    }
-    Swal.fire('Éxito', 'Membresía cancelada', 'success');
-    loadMembresias();
+  const result = await cancelarMembresiaFromComposable(id);
+  if (result?.success) {
+    await loadMembresias();
   }
 };
 
 const reactivarMembresia = async (membresia: Membresia) => {
-  const hoy = new Date();
-  const fechaVencimiento = new Date(membresia.fecha_vencimiento);
-  
-  let mensaje = '¿Reactivar esta membresía?';
-  if (fechaVencimiento < hoy) {
-    mensaje = 'La membresía está vencida. ¿Deseas reactivarla? Se recomienda registrar un pago para extender la fecha de vencimiento.';
-  }
-  
-  const result = await Swal.fire({
-    title: '¿Reactivar membresía?',
-    text: mensaje,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, reactivar',
-    cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#28a745'
-  });
-
-  if (result.isConfirmed) {
-    const { error } = await updateMembresiaEstado(membresia.id, 'activa');
-    if (error) {
-      Swal.fire('Error', error.message, 'error');
-      return;
-    }
-    Swal.fire('Éxito', 'Membresía reactivada correctamente', 'success');
-    loadMembresias();
+  const result = await reactivarMembresiaFromComposable(membresia);
+  if (result?.success) {
+    await loadMembresias();
     
     // Si el modal de detalle está abierto, actualizar
     if (showDetalleModal.value && membresiaDetalle.value?.id === membresia.id) {
@@ -1323,53 +1045,7 @@ const getEstadoBadgeClass = (estado: string) => {
   return clases[estado] || 'badge bg-secondary';
 };
 
-const getVencimientoClass = (fechaVencimiento: string) => {
-  // Normalizar fechas a YYYY-MM-DD para evitar problemas de zona horaria
-  const hoyStr = new Date().toISOString().split('T')[0];
-  const fechaVencimientoStr = normalizarFecha(fechaVencimiento);
-  
-  if (!fechaVencimientoStr) return '';
-  
-  // Comparar directamente como strings YYYY-MM-DD
-  // Si hoy es 2026-03-05 y vence 2026-03-13, son 8 días (no debe incluirse)
-  // Si hoy es 2026-03-05 y vence 2026-03-12, son 7 días (debe incluirse)
-  
-  // Calcular días restantes usando comparación de strings
-  const hoyDate = new Date(hoyStr + 'T00:00:00');
-  const vencimientoDate = new Date(fechaVencimientoStr + 'T00:00:00');
-  const diffTime = vencimientoDate.getTime() - hoyDate.getTime();
-  const diasRestantes = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
-  // Si ya venció (días negativos)
-  if (diasRestantes < 0) return 'text-danger fw-bold';
-  
-  // Si vence en exactamente 7 días o menos (del día 0 al día 7, inclusive)
-  // Si hoy es día 5, "próxima a vencer" es del día 5 (0 días) al día 12 (7 días)
-  // El día 13 (8 días) NO debe incluirse
-  if (diasRestantes >= 0 && diasRestantes <= 7) return 'text-warning fw-bold';
-  
-  return '';
-};
-
-const getRowClass = (membresia: Membresia) => {
-  if (membresia.estado === 'vencida') return 'table-danger';
-  if (membresia.estado === 'cancelada') return 'table-secondary';
-  
-  // Normalizar fechas a YYYY-MM-DD para evitar problemas de zona horaria
-  const hoyStr = new Date().toISOString().split('T')[0];
-  const fechaVencimientoStr = normalizarFecha(membresia.fecha_vencimiento);
-  
-  if (!fechaVencimientoStr) return '';
-  
-  // Calcular días restantes comparando strings de fecha
-  const hoyDate = new Date(hoyStr + 'T00:00:00');
-  const vencimientoDate = new Date(fechaVencimientoStr + 'T00:00:00');
-  const diasRestantes = Math.ceil((vencimientoDate.getTime() - hoyDate.getTime()) / (1000 * 60 * 60 * 24));
-  
-  // Si vence en 7 días o menos (del día 0 al día 7, inclusive)
-  if (diasRestantes <= 7 && diasRestantes >= 0) return 'table-warning';
-  return '';
-};
+// Las funciones getVencimientoClass y getRowClass ahora están en el componente TablaMembresias
 
 const editarCliente = (cliente: Cliente) => {
   clienteEditando.value = cliente;
@@ -1412,8 +1088,9 @@ const guardarCliente = async () => {
     
     Swal.fire('Éxito', 'Cliente actualizado correctamente', 'success');
     cerrarClienteModal();
-    loadMembresias();
-    loadClientes();
+    await loadMembresias();
+    const sucursalId = isSuperadmin.value ? (filtroSucursal.value || null) : currentSucursalId.value;
+    await loadClientes(sucursalId);
   } catch (error: any) {
     errorMessageCliente.value = error.message || 'Error al actualizar cliente';
   } finally {
@@ -1422,26 +1099,9 @@ const guardarCliente = async () => {
 };
 
 const eliminarMembresia = async (membresia: Membresia) => {
-  const result = await Swal.fire({
-    title: '¿Eliminar membresía?',
-    text: `¿Estás seguro de eliminar esta membresía de ${membresia.cliente?.nombre_completo}? Esta acción no se puede deshacer y eliminará todos los pagos asociados.`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#dc3545'
-  });
-  
-  if (result.isConfirmed) {
-    const { error } = await deleteMembresia(membresia.id);
-    
-    if (error) {
-      Swal.fire('Error', error.message, 'error');
-      return;
-    }
-    
-    Swal.fire('Éxito', 'Membresía eliminada correctamente', 'success');
-    loadMembresias();
+  const result = await eliminarMembresiaFromComposable(membresia);
+  if (result?.success) {
+    await loadMembresias();
     
     // Cerrar el modal de detalle si está abierto
     if (showDetalleModal.value && membresiaDetalle.value?.id === membresia.id) {
