@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
-  base: './',
+  base: '/gabysgym/',
   plugins: [
     vue(),
     VitePWA({
@@ -19,17 +19,17 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         lang: 'es',
-        start_url: './',
-        scope: './',
+        start_url: '/gabysgym/',
+        scope: '/gabysgym/',
         icons: [
           { 
-            src: 'img/logo.png', 
+            src: '/gabysgym/img/logo.png', 
             sizes: '192x192', 
             type: 'image/png', 
             purpose: 'any' 
           },
           { 
-            src: 'img/logo.png', 
+            src: '/gabysgym/img/logo.png', 
             sizes: '512x512', 
             type: 'image/png', 
             purpose: 'any maskable' 
