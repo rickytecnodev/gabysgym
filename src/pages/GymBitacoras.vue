@@ -11,66 +11,17 @@
       </div>
 
       <!-- Filtros -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">Fecha Desde</label>
-              <input v-model="filtroFechaDesde" type="date" class="form-control">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Fecha Hasta</label>
-              <input v-model="filtroFechaHasta" type="date" class="form-control">
-            </div>
-          </div>
-        </div>
-      </div>
+      <FiltrosBitacoras
+        v-model:filtro-fecha-desde="filtroFechaDesde"
+        v-model:filtro-fecha-hasta="filtroFechaHasta"
+      />
 
       <!-- Tabla de bitácoras -->
-      <div class="card">
-        <div class="card-body">
-          <div v-if="loadingData" class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
-            </div>
-          </div>
-          <div v-else-if="bitacoras.length === 0" class="text-center text-muted py-4">
-            No hay bitácoras registradas
-          </div>
-          <div v-else class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Tipo</th>
-                  <th>Descripción</th>
-                  <th v-if="isSuperadmin">Empleado</th>
-                  <th v-if="isSuperadmin">Sucursal</th>
-                  <th>Fecha Registro</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="bitacora in bitacoras" :key="bitacora.id">
-                  <td>{{ formatFecha(bitacora.fecha) }}</td>
-                  <td>
-                    <span :class="getBadgeClass(bitacora.tipo)" class="badge">
-                      {{ getTipoLabel(bitacora.tipo) }}
-                    </span>
-                  </td>
-                  <td>{{ bitacora.descripcion }}</td>
-                  <td v-if="isSuperadmin">
-                    {{ bitacora.empleado?.nombre_completo || 'N/A' }}
-                  </td>
-                  <td v-if="isSuperadmin">
-                    {{ bitacora.empleado?.sucursal?.nombre || 'N/A' }}
-                  </td>
-                  <td>{{ formatFecha(bitacora.fecha) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <TablaBitacoras
+        :bitacoras="bitacoras"
+        :is-superadmin="isSuperadmin"
+        :loading="loadingData"
+      />
 
       <!-- Modal de nueva bitácora -->
       <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -134,9 +85,10 @@ import { ref, onMounted, watch } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useBitacoras } from '@/composables/useBitacoras';
 import { getFechaActualLocal } from '@/utils/dateFormatter';
-import { formatFecha } from '@/utils/dateFormatter';
 import type { BitacoraDiaForm } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
+import FiltrosBitacoras from '@/components/bitacoras/FiltrosBitacoras.vue';
+import TablaBitacoras from '@/components/bitacoras/TablaBitacoras.vue';
 
 const { currentUser, isSuperadmin } = useAuth();
 const {
@@ -157,24 +109,6 @@ const formBitacora = ref<BitacoraDiaForm>({
   tipo: 'nota',
   descripcion: ''
 });
-
-const getTipoLabel = (tipo: string) => {
-  const labels: Record<string, string> = {
-    'nota': 'Nota',
-    'incidente': 'Incidente',
-    'observacion': 'Observación'
-  };
-  return labels[tipo] || tipo;
-};
-
-const getBadgeClass = (tipo: string) => {
-  const classes: Record<string, string> = {
-    'nota': 'bg-info',
-    'incidente': 'bg-danger',
-    'observacion': 'bg-warning'
-  };
-  return classes[tipo] || 'bg-secondary';
-};
 
 const abrirModal = () => {
   // Asegurar que siempre se use la fecha actual local al abrir el modal

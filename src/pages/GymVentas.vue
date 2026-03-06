@@ -11,41 +11,22 @@
       </div>
 
       <!-- Filtros -->
-      <FiltrosVentas
-        v-model:filtro-sucursal="filtroSucursal"
-        v-model:filtro-fecha-desde="filtroFechaDesde"
-        v-model:filtro-fecha-hasta="filtroFechaHasta"
-        v-model:filtro-estado="filtroEstado"
-        :periodo-activo="periodoActivo"
-        :sucursales="sucursales"
-        :is-superadmin="isSuperadmin"
-        @aplicar-periodo="aplicarPeriodo"
-        @limpiar-periodo="limpiarPeriodo"
-      />
+      <FiltrosVentas v-model:filtro-sucursal="filtroSucursal" v-model:filtro-fecha-desde="filtroFechaDesde"
+        v-model:filtro-fecha-hasta="filtroFechaHasta" v-model:filtro-estado="filtroEstado"
+        :periodo-activo="periodoActivo" :sucursales="sucursales" :is-superadmin="isSuperadmin"
+        @aplicar-periodo="aplicarPeriodo" @limpiar-periodo="limpiarPeriodo" />
 
       <!-- Tabs y Tablas de ventas -->
       <TabsVentas :tab-activo="tabActivo" @cambiar-tab="tabActivo = $event">
         <template #productos>
-          <TablaVentasProductos
-            :ventas="ventasFiltradas"
-            :is-superadmin="isSuperadmin"
-            :filtro-sucursal="filtroSucursal"
-            :loading="loadingDataVentas"
-            @ver-detalle="verDetalleVenta"
-            @editar="editarVenta"
-            @eliminar="eliminarVenta"
-          />
+          <TablaVentasProductos :ventas="ventasFiltradas" :is-superadmin="isSuperadmin"
+            :filtro-sucursal="filtroSucursal" :loading="loadingDataVentas" @ver-detalle="verDetalleVenta"
+            @editar="editarVenta" @eliminar="eliminarVenta" />
         </template>
         <template #membresias>
-          <TablaPagosMembresia
-            :pagos="pagosMembresiaFiltrados"
-            :is-superadmin="isSuperadmin"
-            :filtro-sucursal="filtroSucursal"
-            :loading="loadingDataVentas"
-            @ver-detalle="verDetalleMembresia"
-            @editar="editarPagoMembresia"
-            @eliminar="eliminarPagoMembresia"
-          />
+          <TablaPagosMembresia :pagos="pagosMembresiaFiltrados" :is-superadmin="isSuperadmin"
+            :filtro-sucursal="filtroSucursal" :loading="loadingDataVentas" @ver-detalle="verDetalleMembresia"
+            @editar="editarPagoMembresia" @eliminar="eliminarPagoMembresia" />
         </template>
       </TabsVentas>
 
@@ -87,20 +68,10 @@
                         {{ producto.nombre }} - ${{ producto.precio.toFixed(2) }} (Stock: {{ producto.stock }})
                       </option>
                     </select>
-                    <input 
-                      v-model.number="cantidadProducto" 
-                      type="number" 
-                      min="1" 
-                      class="form-control" 
-                      style="width: 100px;"
-                      placeholder="Cant."
-                    >
-                    <button 
-                      type="button" 
-                      @click="agregarProducto" 
-                      class="btn btn-primary"
-                      :disabled="!productoSeleccionado || !cantidadProducto"
-                    >
+                    <input v-model.number="cantidadProducto" type="number" min="1" class="form-control"
+                      style="width: 100px;" placeholder="Cant.">
+                    <button type="button" @click="agregarProducto" class="btn btn-primary"
+                      :disabled="!productoSeleccionado || !cantidadProducto">
                       Agregar
                     </button>
                   </div>
@@ -180,8 +151,9 @@
                 <p><strong>Fecha:</strong> {{ formatFecha(ventaDetalle.fecha_venta) }}</p>
                 <p><strong>Cliente:</strong> {{ ventaDetalle.cliente?.nombre_completo || 'Cliente general' }}</p>
                 <p><strong>Empleado:</strong> {{ ventaDetalle.empleado?.nombre_completo }}</p>
-                  <p><strong>Estado:</strong> 
-                  <span :class="ventaDetalle.estado_pago === 'pagado' ? 'badge bg-success' : ventaDetalle.estado_pago === 'pendiente' ? 'badge bg-warning' : 'badge bg-danger'">
+                <p><strong>Estado:</strong>
+                  <span
+                    :class="ventaDetalle.estado_pago === 'pagado' ? 'badge bg-success' : ventaDetalle.estado_pago === 'pendiente' ? 'badge bg-warning' : 'badge bg-danger'">
                     {{ ventaDetalle.estado_pago }}
                   </span>
                 </p>
@@ -214,11 +186,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button 
-                v-if="ventaDetalle?.estado_pago === 'pendiente'"
-                @click="marcarPagadoDesdeDetalle" 
-                class="btn btn-success me-2"
-              >
+              <button v-if="ventaDetalle?.estado_pago === 'pendiente'" @click="marcarPagadoDesdeDetalle"
+                class="btn btn-success me-2">
                 <i class="fa-solid fa-check me-1"></i>
                 Marcar como Pagado
               </button>
@@ -229,7 +198,8 @@
       </div>
 
       <!-- Modal de detalle de membresía pagada -->
-      <div v-if="showDetalleMembresiaModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+      <div v-if="showDetalleMembresiaModal" class="modal show d-block" tabindex="-1"
+        style="background-color: rgba(0,0,0,0.5)">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
@@ -249,9 +219,12 @@
                     <h6>Información de la Membresía</h6>
                     <p><strong>Tipo:</strong> {{ pagoMembresiaDetalle.membresia.tipo_membresia?.nombre }}</p>
                     <p><strong>Fecha Inicio:</strong> {{ formatFecha(pagoMembresiaDetalle.membresia.fecha_inicio) }}</p>
-                    <p><strong>Fecha Vencimiento:</strong> {{ formatFecha(pagoMembresiaDetalle.membresia.fecha_vencimiento) }}</p>
-                    <p><strong>Estado:</strong> 
-                      <span :class="pagoMembresiaDetalle.membresia.estado === 'activa' ? 'badge bg-success' : pagoMembresiaDetalle.membresia.estado === 'vencida' ? 'badge bg-danger' : 'badge bg-secondary'">
+                    <p><strong>Fecha Vencimiento:</strong> {{
+                      formatFecha(pagoMembresiaDetalle.membresia.fecha_vencimiento) }}
+                    </p>
+                    <p><strong>Estado:</strong>
+                      <span
+                        :class="pagoMembresiaDetalle.membresia.estado === 'activa' ? 'badge bg-success' : pagoMembresiaDetalle.membresia.estado === 'vencida' ? 'badge bg-danger' : 'badge bg-secondary'">
                         {{ pagoMembresiaDetalle.membresia.estado }}
                       </span>
                     </p>
@@ -281,7 +254,8 @@
       </div>
 
       <!-- Modal de editar pago de membresía -->
-      <div v-if="showModalEditarPago" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+      <div v-if="showModalEditarPago" class="modal show d-block" tabindex="-1"
+        style="background-color: rgba(0,0,0,0.5)">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -300,12 +274,7 @@
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Mes Pagado *</label>
-                  <input 
-                    v-model="formPagoEdit.mes_pagado" 
-                    type="month" 
-                    class="form-control" 
-                    required
-                  >
+                  <input v-model="formPagoEdit.mes_pagado" type="month" class="form-control" required>
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Método de Pago</label>
@@ -335,7 +304,8 @@
       </div>
 
       <!-- Modal de editar venta -->
-      <div v-if="showModalEditarVenta" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+      <div v-if="showModalEditarVenta" class="modal show d-block" tabindex="-1"
+        style="background-color: rgba(0,0,0,0.5)">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
@@ -356,10 +326,12 @@
                       </select>
                     </div>
                     <div class="col-md-2">
-                      <input v-model.number="cantidadProductoEdit" type="number" min="1" class="form-control" placeholder="Cantidad">
+                      <input v-model.number="cantidadProductoEdit" type="number" min="1" class="form-control"
+                        placeholder="Cantidad">
                     </div>
                     <div class="col-md-3">
-                      <input v-model.number="precioProductoEdit" type="number" step="0.01" min="0" class="form-control" placeholder="Precio (opcional)">
+                      <input v-model.number="precioProductoEdit" type="number" step="0.01" min="0" class="form-control"
+                        placeholder="Precio (opcional)">
                       <small class="text-muted">Dejar en 0 para usar precio del producto</small>
                     </div>
                     <div class="col-md-3">
@@ -388,27 +360,19 @@
                         <tr v-for="(item, index) in productosVentaEdit" :key="index">
                           <td>{{ item.nombre }}</td>
                           <td>
-                            <input 
-                              v-model.number="item.cantidad" 
-                              type="number" 
-                              min="1" 
+                            <input v-model.number="item.cantidad" type="number" min="1"
                               class="form-control form-control-sm"
-                              @change="item.subtotal = item.cantidad * item.precio_unitario"
-                            >
+                              @change="item.subtotal = item.cantidad * item.precio_unitario">
                           </td>
                           <td>
-                            <input 
-                              v-model.number="item.precio_unitario" 
-                              type="number" 
-                              step="0.01" 
-                              min="0" 
+                            <input v-model.number="item.precio_unitario" type="number" step="0.01" min="0"
                               class="form-control form-control-sm"
-                              @change="item.subtotal = item.cantidad * item.precio_unitario"
-                            >
+                              @change="item.subtotal = item.cantidad * item.precio_unitario">
                           </td>
                           <td>${{ item.subtotal.toFixed(2) }}</td>
                           <td>
-                            <button type="button" @click="eliminarProductoEdit(index)" class="btn btn-sm btn-outline-danger">
+                            <button type="button" @click="eliminarProductoEdit(index)"
+                              class="btn btn-sm btn-outline-danger">
                               <i class="fa-solid fa-trash"></i>
                             </button>
                           </td>
@@ -417,7 +381,7 @@
                       <tfoot>
                         <tr>
                           <th colspan="3" class="text-end">Total:</th>
-                          <th>${{ productosVentaEdit.reduce((sum, item) => sum + item.subtotal, 0).toFixed(2) }}</th>
+                          <th>${{productosVentaEdit.reduce((sum, item) => sum + item.subtotal, 0).toFixed(2)}}</th>
                           <th></th>
                         </tr>
                       </tfoot>
@@ -567,28 +531,28 @@ watch(periodoActivo, () => {
 
 onMounted(async () => {
   const filters = getFilters();
-  
+
   if (filters) {
     if (filters.periodo) {
       periodoActivo.value = filters.periodo;
       aplicarPeriodo(filters.periodo);
     }
-    
+
     if (filters.estado) {
       filtroEstado.value = filters.estado;
     }
-    
+
     clearFilters();
   } else {
     // Si no hay filtros guardados, aplicar el filtro rápido de "hoy" por defecto
     aplicarPeriodo('hoy');
   }
-  
+
   await loadVentas();
   const sucursalId = isSuperadmin.value ? null : currentSucursalId.value;
   await loadProductos(sucursalId);
   await loadClientes(sucursalId);
-  
+
   if (isSuperadmin.value) {
     await loadSucursales();
   }
@@ -598,11 +562,11 @@ onMounted(async () => {
 const calcularFechasPeriodo = (periodo: string) => {
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
-  
+
   let desde: Date;
   let hasta: Date = new Date(hoy);
   hasta.setHours(23, 59, 59, 999);
-  
+
   switch (periodo) {
     case 'hoy':
       desde = new Date(hoy);
@@ -622,7 +586,7 @@ const calcularFechasPeriodo = (periodo: string) => {
     default:
       return { desde: null, hasta: null };
   }
-  
+
   return {
     desde: desde.toISOString().split('T')[0],
     hasta: hasta.toISOString().split('T')[0]
@@ -632,11 +596,11 @@ const calcularFechasPeriodo = (periodo: string) => {
 const aplicarPeriodo = (periodo: string) => {
   periodoActivo.value = periodo;
   const fechas = calcularFechasPeriodo(periodo);
-  
+
   if (fechas.desde && fechas.hasta) {
     filtroFechaDesde.value = fechas.desde;
     filtroFechaHasta.value = fechas.hasta;
-    
+
     // El watcher de filtroFechaDesde/filtroFechaHasta ya recargará los datos
   }
 };
@@ -651,26 +615,26 @@ const limpiarPeriodo = () => {
 const loadVentas = async () => {
   let fechaDesde = filtroFechaDesde.value;
   let fechaHasta = filtroFechaHasta.value;
-  
+
   if (periodoActivo.value) {
     const fechas = calcularFechasPeriodo(periodoActivo.value);
     fechaDesde = fechas.desde || fechaDesde;
     fechaHasta = fechas.hasta || fechaHasta;
   }
-  
-  const sucursalId = isSuperadmin.value 
-    ? (filtroSucursal.value || null) 
+
+  const sucursalId = isSuperadmin.value
+    ? (filtroSucursal.value || null)
     : currentSucursalId.value;
-  
+
   const empleadoId = isSuperadmin.value ? null : currentUser.value?.id || null;
-  
+
   await loadVentasFromComposable(
     sucursalId,
     fechaDesde || undefined,
     fechaHasta || undefined,
     empleadoId
   );
-  
+
   await loadPagosMembresiaFromComposable(
     sucursalId,
     fechaDesde || undefined,
@@ -690,7 +654,7 @@ watch(sucursalSeleccionada, () => {
 
 const agregarProducto = () => {
   if (!productoSeleccionado.value || !cantidadProducto.value) return;
-  
+
   const producto = productosDisponibles.value.find(p => p.id === productoSeleccionado.value);
   if (!producto) return;
 
@@ -733,13 +697,13 @@ const guardarVenta = async () => {
     return;
   }
 
-  const sucursalId = isSuperadmin.value 
-    ? sucursalSeleccionada.value 
+  const sucursalId = isSuperadmin.value
+    ? sucursalSeleccionada.value
     : currentSucursalId.value;
 
   if (!sucursalId) {
-    errorMessage.value = isSuperadmin.value 
-      ? 'Debes seleccionar una sucursal' 
+    errorMessage.value = isSuperadmin.value
+      ? 'Debes seleccionar una sucursal'
       : 'Error: no tienes sucursal asignada';
     return;
   }
@@ -776,7 +740,7 @@ const guardarVenta = async () => {
     const sucursalIdForProducts = isSuperadmin.value ? null : currentSucursalId.value;
     await loadProductos(sucursalIdForProducts);
   }
-  
+
   loading.value = false;
 };
 
@@ -793,7 +757,7 @@ const verDetalleMembresia = (pago: PagoMembresia) => {
 
 const marcarPagadoDesdeDetalle = async () => {
   if (!ventaDetalle.value) return;
-  
+
   const result = await marcarPagadoFromComposable(ventaDetalle.value.id);
   if (result?.success) {
     showDetalleModal.value = false;
@@ -803,7 +767,7 @@ const marcarPagadoDesdeDetalle = async () => {
 
 const editarVenta = (venta: Venta) => {
   ventaEditando.value = venta;
-  
+
   // Cargar los productos de la venta en el formulario de edición
   if (venta.detalles && venta.detalles.length > 0) {
     productosVentaEdit.value = venta.detalles.map(detalle => ({
@@ -816,7 +780,7 @@ const editarVenta = (venta: Venta) => {
   } else {
     productosVentaEdit.value = [];
   }
-  
+
   estadoPagoEdit.value = venta.estado_pago || 'pagado';
   errorMessage.value = '';
   showModalEditarVenta.value = true;
@@ -1035,4 +999,3 @@ const guardarPagoEditado = async () => {
 };
 
 </script>
-

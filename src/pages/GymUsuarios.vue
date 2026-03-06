@@ -11,64 +11,7 @@
       </div>
 
       <!-- Tabla de usuarios -->
-      <div class="card">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Nombre Completo</th>
-                  <th>Email</th>
-                  <th>Teléfono</th>
-                  <th>Rol</th>
-                  <th>Sucursal</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="usuario in usuarios" :key="usuario.id">
-                  <td>{{ usuario.username }}</td>
-                  <td>{{ usuario.nombre_completo }}</td>
-                  <td>{{ usuario.email || 'N/A' }}</td>
-                  <td>{{ usuario.telefono || 'N/A' }}</td>
-                  <td>
-                    <span :class="usuario.rol === 'superadmin' ? 'badge bg-danger' : 'badge bg-primary'">
-                      {{ usuario.rol === 'superadmin' ? 'Superadmin' : 'Empleado' }}
-                    </span>
-                  </td>
-                  <td>{{ usuario.sucursal?.nombre || 'N/A' }}</td>
-                  <td>
-                    <span :class="usuario.activo ? 'badge bg-success' : 'badge bg-secondary'">
-                      {{ usuario.activo ? 'Activo' : 'Inactivo' }}
-                    </span>
-                  </td>
-                  <td>
-                    <button @click="editarUsuario(usuario)" class="btn btn-sm btn-outline-primary me-1">
-                      <i class="fa-solid fa-edit"></i>
-                    </button>
-                    <button @click="eliminarUsuario(usuario)" class="btn btn-sm btn-outline-danger">
-                      <i class="fa-solid fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr v-if="loading">
-                  <td colspan="8" class="text-center py-4">
-                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                      <span class="visually-hidden">Cargando...</span>
-                    </div>
-                    Cargando usuarios...
-                  </td>
-                </tr>
-                <tr v-else-if="usuarios.length === 0">
-                  <td colspan="8" class="text-center text-muted">No hay usuarios</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <TablaUsuarios :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario" @eliminar="eliminarUsuario" />
 
       <!-- Modal de usuario (editar/crear) -->
       <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -85,8 +28,10 @@
                   <input v-model="formUsuario.username" type="text" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label">{{ usuarioEditando ? 'Nueva ' : '' }}Contraseña {{ usuarioEditando ? '(dejar vacío para no cambiar)' : '*' }}</label>
-                  <input v-model="formUsuario.password" type="password" class="form-control" :required="!usuarioEditando">
+                  <label class="form-label">{{ usuarioEditando ? 'Nueva ' : '' }}
+                    Contraseña {{ usuarioEditando ? '(dejar vacío para no cambiar)' : '*' }}</label>
+                  <input v-model="formUsuario.password" type="password" class="form-control"
+                    :required="!usuarioEditando">
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Nombre Completo *</label>
@@ -148,6 +93,7 @@ import { ref, onMounted } from 'vue';
 import { fetchEmpleados, createEmpleado, updateEmpleado, deleteEmpleado, fetchSucursales } from '@/services/gymApi';
 import type { Empleado, Sucursal } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
+import TablaUsuarios from '@/components/usuarios/TablaUsuarios.vue';
 import Swal from 'sweetalert2';
 
 const usuarios = ref<Empleado[]>([]);
@@ -246,7 +192,7 @@ const guardarUsuario = async () => {
 
   try {
     let result;
-    
+
     if (usuarioEditando.value) {
       // Actualizar usuario
       const payload: any = {
@@ -258,12 +204,12 @@ const guardarUsuario = async () => {
         sucursal_id: formUsuario.value.rol === 'empleado' ? (formUsuario.value.sucursal_id || null) : null,
         activo: formUsuario.value.activo
       };
-      
+
       // Solo incluir password si se proporcionó uno nuevo
       if (formUsuario.value.password) {
         payload.password = formUsuario.value.password;
       }
-      
+
       result = await updateEmpleado(usuarioEditando.value.id, payload);
     } else {
       // Crear usuario
@@ -272,7 +218,7 @@ const guardarUsuario = async () => {
         loading.value = false;
         return;
       }
-      
+
       result = await createEmpleado({
         username: formUsuario.value.username,
         password: formUsuario.value.password,

@@ -1,83 +1,61 @@
 <template>
   <div class="bg-light min-vh-100">
     <GymNavbar />
-    <div class="container py-4" style="width: 50%;">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Editar Mis Datos</h1>
-      </div>
+    <div class="container py-4">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Editar Mis Datos</h1>
+          </div>
 
-      <!-- Modal de editar datos -->
-      <div class="card">
-        <div class="card-body">
-          <form @submit.prevent="guardarDatos">
-            <div class="mb-3">
-              <label class="form-label">Usuario *</label>
-              <input 
-                v-model="formUsuario.username" 
-                type="text" 
-                class="form-control" 
-                required
-                :disabled="loading"
-              >
+          <!-- Modal de editar datos -->
+          <div class="card">
+            <div class="card-body">
+              <form @submit.prevent="guardarDatos">
+                <div class="mb-3">
+                  <label class="form-label">Usuario *</label>
+                  <input v-model="formUsuario.username" type="text" class="form-control" required :disabled="loading">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Nombre Completo *</label>
+                  <input v-model="formUsuario.nombre_completo" type="text" class="form-control" required
+                    :disabled="loading">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Email</label>
+                  <input v-model="formUsuario.email" type="email" class="form-control" :disabled="loading">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Teléfono</label>
+                  <input v-model="formUsuario.telefono" type="text" class="form-control" :disabled="loading">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Nueva Contraseña</label>
+                  <input v-model="formUsuario.password" type="password" class="form-control"
+                    placeholder="Dejar vacío para no cambiar" :disabled="loading">
+                  <small class="text-muted">Deja este campo vacío si no deseas cambiar tu contraseña</small>
+                </div>
+
+                <div v-if="errorMessage" class="alert alert-danger">
+                  {{ errorMessage }}
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                  <router-link to="/gym/dashboard" class="btn btn-secondary" :disabled="loading">
+                    Cancelar
+                  </router-link>
+                  <button type="submit" class="btn btn-primary" :disabled="loading">
+                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                    Guardar Cambios
+                  </button>
+                </div>
+              </form>
             </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Nombre Completo *</label>
-              <input 
-                v-model="formUsuario.nombre_completo" 
-                type="text" 
-                class="form-control" 
-                required
-                :disabled="loading"
-              >
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Email</label>
-              <input 
-                v-model="formUsuario.email" 
-                type="email" 
-                class="form-control"
-                :disabled="loading"
-              >
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Teléfono</label>
-              <input 
-                v-model="formUsuario.telefono" 
-                type="text" 
-                class="form-control"
-                :disabled="loading"
-              >
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Nueva Contraseña</label>
-              <input 
-                v-model="formUsuario.password" 
-                type="password" 
-                class="form-control"
-                placeholder="Dejar vacío para no cambiar"
-                :disabled="loading"
-              >
-              <small class="text-muted">Deja este campo vacío si no deseas cambiar tu contraseña</small>
-            </div>
-            
-            <div v-if="errorMessage" class="alert alert-danger">
-              {{ errorMessage }}
-            </div>
-            
-            <div class="d-flex justify-content-end gap-2">
-              <router-link to="/gym/dashboard" class="btn btn-secondary" :disabled="loading">
-                Cancelar
-              </router-link>
-              <button type="submit" class="btn btn-primary" :disabled="loading">
-                <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                Guardar Cambios
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
