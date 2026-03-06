@@ -10,8 +10,15 @@
         </button>
       </div>
 
-      <!-- Tabla de usuarios -->
-      <TablaUsuarios :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario" @eliminar="eliminarUsuario" />
+      <!-- Tabla de usuarios (Desktop) -->
+      <div class="d-none d-md-block">
+        <TablaUsuarios :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario" @eliminar="eliminarUsuario" />
+      </div>
+
+      <!-- Vista móvil de usuarios (Mobile) -->
+      <div class="d-block d-md-none">
+        <TablaUsuariosMobile :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario" @eliminar="eliminarUsuario" />
+      </div>
 
       <!-- Modal de usuario (editar/crear) -->
       <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -94,6 +101,7 @@ import { fetchEmpleados, createEmpleado, updateEmpleado, deleteEmpleado, fetchSu
 import type { Empleado, Sucursal } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
 import TablaUsuarios from '@/components/usuarios/TablaUsuarios.vue';
+import TablaUsuariosMobile from '@/components/usuarios/TablaUsuariosMobile.vue';
 import Swal from 'sweetalert2';
 
 const usuarios = ref<Empleado[]>([]);

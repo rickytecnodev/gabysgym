@@ -16,12 +16,23 @@
         v-model:filtro-fecha-hasta="filtroFechaHasta"
       />
 
-      <!-- Tabla de bitácoras -->
-      <TablaBitacoras
-        :bitacoras="bitacoras"
-        :is-superadmin="isSuperadmin"
-        :loading="loadingData"
-      />
+      <!-- Tabla de bitácoras (Desktop) -->
+      <div class="d-none d-md-block">
+        <TablaBitacoras
+          :bitacoras="bitacoras"
+          :is-superadmin="isSuperadmin"
+          :loading="loadingData"
+        />
+      </div>
+
+      <!-- Vista móvil de bitácoras (Mobile) -->
+      <div class="d-block d-md-none">
+        <TablaBitacorasMobile
+          :bitacoras="bitacoras"
+          :is-superadmin="isSuperadmin"
+          :loading="loadingData"
+        />
+      </div>
 
       <!-- Modal de nueva bitácora -->
       <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -89,6 +100,7 @@ import type { BitacoraDiaForm } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosBitacoras from '@/components/bitacoras/FiltrosBitacoras.vue';
 import TablaBitacoras from '@/components/bitacoras/TablaBitacoras.vue';
+import TablaBitacorasMobile from '@/components/bitacoras/TablaBitacorasMobile.vue';
 
 const { currentUser, isSuperadmin } = useAuth();
 const {

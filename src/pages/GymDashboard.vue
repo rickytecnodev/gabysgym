@@ -45,7 +45,7 @@
 
       <!-- Estadísticas rápidas -->
       <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
           <div 
             @click="stats.ventasHoy > 0 ? navegarAVentas('hoy') : null" 
             :class="['card border-0 shadow-sm h-100', stats.ventasHoy > 0 ? 'hover-card' : 'opacity-50']" 
@@ -64,7 +64,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
           <div 
             @click="stats.ventasPendientes > 0 ? navegarAVentas('hoy', 'pendiente') : null" 
             :class="['card border-0 shadow-sm h-100', stats.ventasPendientes > 0 ? 'hover-card' : 'opacity-50']" 
@@ -83,7 +83,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
           <div 
             @click="stats.membresiasActivas > 0 ? navegarAMembresias({ estado: 'activa' }) : null" 
             :class="['card border-0 shadow-sm h-100', stats.membresiasActivas > 0 ? 'hover-card' : 'opacity-50']" 
@@ -102,7 +102,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
           <div 
             @click="stats.membresiasPorVencer > 0 ? navegarAMembresiasPorVencer() : null" 
             :class="['card border-0 shadow-sm h-100', stats.membresiasPorVencer > 0 ? 'hover-card' : 'opacity-50']" 
@@ -123,7 +123,7 @@
         </div>
       </div>
       <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
           <div 
             @click="stats.membresiasVencidas > 0 ? navegarAMembresias({ estado: 'vencida' }) : null" 
             :class="['card border-0 shadow-sm h-100', stats.membresiasVencidas > 0 ? 'hover-card' : 'opacity-50']" 
@@ -142,7 +142,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
@@ -157,7 +157,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
           <div 
             @click="stats.bitacorasHoy > 0 ? navegarABitacoras() : null" 
             :class="['card border-0 shadow-sm h-100', stats.bitacorasHoy > 0 ? 'hover-card' : 'opacity-50']" 

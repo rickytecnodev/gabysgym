@@ -34,24 +34,50 @@
             :is-superadmin="isSuperadmin"
           />
 
-          <!-- Tabla de productos -->
-          <TablaProductos
-            :productos="productosFiltrados"
-            :is-superadmin="isSuperadmin"
-            :loading="loadingData"
-            @editar="editarProducto"
-            @eliminar="eliminarProducto"
-          />
+          <!-- Tabla de productos (Desktop) -->
+          <div class="d-none d-md-block">
+            <TablaProductos
+              :productos="productosFiltrados"
+              :is-superadmin="isSuperadmin"
+              :loading="loadingData"
+              @editar="editarProducto"
+              @eliminar="eliminarProducto"
+            />
+          </div>
+
+          <!-- Vista móvil de productos (Mobile) -->
+          <div class="d-block d-md-none">
+            <TablaProductosMobile
+              :productos="productosFiltrados"
+              :is-superadmin="isSuperadmin"
+              :loading="loadingData"
+              @editar="editarProducto"
+              @eliminar="eliminarProducto"
+            />
+          </div>
         </template>
         <template #tipos-membresias>
-          <!-- Tabla de tipos de membresías -->
-          <TablaTiposMembresia
-            :tipos-membresia="tiposMembresia"
-            :is-superadmin="isSuperadmin"
-            :loading="loadingTiposMembresia"
-            @editar="editarTipoMembresia"
-            @eliminar="eliminarTipoMembresia"
-          />
+          <!-- Tabla de tipos de membresías (Desktop) -->
+          <div class="d-none d-md-block">
+            <TablaTiposMembresia
+              :tipos-membresia="tiposMembresia"
+              :is-superadmin="isSuperadmin"
+              :loading="loadingTiposMembresia"
+              @editar="editarTipoMembresia"
+              @eliminar="eliminarTipoMembresia"
+            />
+          </div>
+
+          <!-- Vista móvil de tipos de membresías (Mobile) -->
+          <div class="d-block d-md-none">
+            <TablaTiposMembresiaMobile
+              :tipos-membresia="tiposMembresia"
+              :is-superadmin="isSuperadmin"
+              :loading="loadingTiposMembresia"
+              @editar="editarTipoMembresia"
+              @eliminar="eliminarTipoMembresia"
+            />
+          </div>
         </template>
       </TabsProductos>
 
@@ -192,8 +218,10 @@ import type { Producto, ProductoForm, TipoMembresia } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosProductos from '@/components/productos/FiltrosProductos.vue';
 import TablaProductos from '@/components/productos/TablaProductos.vue';
+import TablaProductosMobile from '@/components/productos/TablaProductosMobile.vue';
 import TabsProductos from '@/components/productos/TabsProductos.vue';
 import TablaTiposMembresia from '@/components/membresias/TablaTiposMembresia.vue';
+import TablaTiposMembresiaMobile from '@/components/membresias/TablaTiposMembresiaMobile.vue';
 import Swal from 'sweetalert2';
 
 const { currentSucursalId, isSuperadmin } = useAuth();

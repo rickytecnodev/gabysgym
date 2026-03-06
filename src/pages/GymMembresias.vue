@@ -27,21 +27,41 @@
         @actualizar-estados="actualizarEstados"
       />
 
-      <!-- Tabla de membresías -->
-      <TablaMembresias
-        :membresias="membresiasFiltradas"
-        :is-superadmin="isSuperadmin"
-        :filtro-sucursal="filtroSucursal"
-        :loading="loadingDataMembresias"
-        @ver-detalle="verDetalle"
-        @registrar-pago="registrarPago"
-        @enviar-recordatorio="enviarRecordatorio"
-        @cancelar="cancelarMembresia"
-        @reactivar="reactivarMembresia"
-        @editar-fechas="editarFechas"
-        @editar-cliente="editarCliente"
-        @eliminar="eliminarMembresia"
-      />
+      <!-- Tabla de membresías (Desktop) -->
+      <div class="d-none d-md-block">
+        <TablaMembresias
+          :membresias="membresiasFiltradas"
+          :is-superadmin="isSuperadmin"
+          :filtro-sucursal="filtroSucursal"
+          :loading="loadingDataMembresias"
+          @ver-detalle="verDetalle"
+          @registrar-pago="registrarPago"
+          @enviar-recordatorio="enviarRecordatorio"
+          @cancelar="cancelarMembresia"
+          @reactivar="reactivarMembresia"
+          @editar-fechas="editarFechas"
+          @editar-cliente="editarCliente"
+          @eliminar="eliminarMembresia"
+        />
+      </div>
+
+      <!-- Vista móvil de membresías (Mobile) -->
+      <div class="d-block d-md-none">
+        <TablaMembresiasMobile
+          :membresias="membresiasFiltradas"
+          :is-superadmin="isSuperadmin"
+          :filtro-sucursal="filtroSucursal"
+          :loading="loadingDataMembresias"
+          @ver-detalle="verDetalle"
+          @registrar-pago="registrarPago"
+          @enviar-recordatorio="enviarRecordatorio"
+          @cancelar="cancelarMembresia"
+          @reactivar="reactivarMembresia"
+          @editar-fechas="editarFechas"
+          @editar-cliente="editarCliente"
+          @eliminar="eliminarMembresia"
+        />
+      </div>
 
       <!-- Modal de nueva membresía -->
       <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -448,6 +468,7 @@ import { formatFecha, formatMesPagado, getFechaActualLocal, getFechaHoraActualLo
 import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosMembresias from '@/components/membresias/FiltrosMembresias.vue';
 import TablaMembresias from '@/components/membresias/TablaMembresias.vue';
+import TablaMembresiasMobile from '@/components/membresias/TablaMembresiasMobile.vue';
 
 const { currentSucursalId, currentUser, isSuperadmin } = useAuth();
 const { getFilters, clearFilters } = useGymFilters();

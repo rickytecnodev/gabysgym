@@ -18,15 +18,29 @@
         :is-superadmin="isSuperadmin"
       />
 
-      <!-- Tabla de clientes -->
-      <TablaClientes
-        :clientes="clientesFiltrados"
-        :is-superadmin="isSuperadmin"
-        :loading="loadingDataClientes"
-        @ver-detalle="verDetalleCliente"
-        @editar="editarCliente"
-        @eliminar="eliminarCliente"
-      />
+      <!-- Tabla de clientes (Desktop) -->
+      <div class="d-none d-md-block">
+        <TablaClientes
+          :clientes="clientesFiltrados"
+          :is-superadmin="isSuperadmin"
+          :loading="loadingDataClientes"
+          @ver-detalle="verDetalleCliente"
+          @editar="editarCliente"
+          @eliminar="eliminarCliente"
+        />
+      </div>
+
+      <!-- Vista móvil de clientes (Mobile) -->
+      <div class="d-block d-md-none">
+        <TablaClientesMobile
+          :clientes="clientesFiltrados"
+          :is-superadmin="isSuperadmin"
+          :loading="loadingDataClientes"
+          @ver-detalle="verDetalleCliente"
+          @editar="editarCliente"
+          @eliminar="eliminarCliente"
+        />
+      </div>
 
       <!-- Modal de detalle de cliente -->
       <div v-if="showDetalleModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -148,6 +162,7 @@ import type { Cliente, ClienteForm } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosClientes from '@/components/clientes/FiltrosClientes.vue';
 import TablaClientes from '@/components/clientes/TablaClientes.vue';
+import TablaClientesMobile from '@/components/clientes/TablaClientesMobile.vue';
 import { formatFecha } from '@/utils/dateFormatter';
 import Swal from 'sweetalert2';
 

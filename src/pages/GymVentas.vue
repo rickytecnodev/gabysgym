@@ -19,14 +19,32 @@
       <!-- Tabs y Tablas de ventas -->
       <TabsVentas :tab-activo="tabActivo" @cambiar-tab="tabActivo = $event">
         <template #productos>
-          <TablaVentasProductos :ventas="ventasFiltradas" :is-superadmin="isSuperadmin"
-            :filtro-sucursal="filtroSucursal" :loading="loadingDataVentas" @ver-detalle="verDetalleVenta"
-            @editar="editarVenta" @eliminar="eliminarVenta" />
+          <!-- Tabla de ventas productos (Desktop) -->
+          <div class="d-none d-md-block">
+            <TablaVentasProductos :ventas="ventasFiltradas" :is-superadmin="isSuperadmin"
+              :filtro-sucursal="filtroSucursal" :loading="loadingDataVentas" @ver-detalle="verDetalleVenta"
+              @editar="editarVenta" @eliminar="eliminarVenta" />
+          </div>
+          <!-- Vista móvil de ventas productos (Mobile) -->
+          <div class="d-block d-md-none">
+            <TablaVentasProductosMobile :ventas="ventasFiltradas" :is-superadmin="isSuperadmin"
+              :filtro-sucursal="filtroSucursal" :loading="loadingDataVentas" @ver-detalle="verDetalleVenta"
+              @editar="editarVenta" @eliminar="eliminarVenta" />
+          </div>
         </template>
         <template #membresias>
-          <TablaPagosMembresia :pagos="pagosMembresiaFiltrados" :is-superadmin="isSuperadmin"
-            :filtro-sucursal="filtroSucursal" :loading="loadingDataVentas" @ver-detalle="verDetalleMembresia"
-            @editar="editarPagoMembresia" @eliminar="eliminarPagoMembresia" />
+          <!-- Tabla de pagos membresía (Desktop) -->
+          <div class="d-none d-md-block">
+            <TablaPagosMembresia :pagos="pagosMembresiaFiltrados" :is-superadmin="isSuperadmin"
+              :filtro-sucursal="filtroSucursal" :loading="loadingDataVentas" @ver-detalle="verDetalleMembresia"
+              @editar="editarPagoMembresia" @eliminar="eliminarPagoMembresia" />
+          </div>
+          <!-- Vista móvil de pagos membresía (Mobile) -->
+          <div class="d-block d-md-none">
+            <TablaPagosMembresiaMobile :pagos="pagosMembresiaFiltrados" :is-superadmin="isSuperadmin"
+              :filtro-sucursal="filtroSucursal" :loading="loadingDataVentas" @ver-detalle="verDetalleMembresia"
+              @editar="editarPagoMembresia" @eliminar="eliminarPagoMembresia" />
+          </div>
         </template>
       </TabsVentas>
 
@@ -429,7 +447,9 @@ import { formatFecha, formatMesPagado } from '@/utils/dateFormatter';
 import FiltrosVentas from '@/components/ventas/FiltrosVentas.vue';
 import TabsVentas from '@/components/ventas/TabsVentas.vue';
 import TablaVentasProductos from '@/components/ventas/TablaVentasProductos.vue';
+import TablaVentasProductosMobile from '@/components/ventas/TablaVentasProductosMobile.vue';
 import TablaPagosMembresia from '@/components/ventas/TablaPagosMembresia.vue';
+import TablaPagosMembresiaMobile from '@/components/ventas/TablaPagosMembresiaMobile.vue';
 
 const { currentSucursalId, currentUser, isSuperadmin } = useAuth();
 const { getFilters, clearFilters } = useGymFilters();

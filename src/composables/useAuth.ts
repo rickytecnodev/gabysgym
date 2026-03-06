@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue';
 import type { Empleado, Sucursal } from '@/types/gym';
+import { fetchEmpleados } from '@/services/gymApi';
 
 interface User extends Empleado {
   sucursal?: Sucursal | null;
@@ -67,7 +68,6 @@ const refreshUser = async () => {
   if (!currentUser.value) return;
   
   try {
-    const { fetchEmpleados } = await import('@/services/gymApi');
     const { data } = await fetchEmpleados();
     if (data) {
       const updatedUser = data.find(u => u.id === currentUser.value?.id);
