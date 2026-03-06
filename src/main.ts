@@ -26,35 +26,4 @@ app.use(PrimeVue, {
 
 app.config.globalProperties.$swal = Swal;
 
-// Registrar Service Worker para PWA
-if ('serviceWorker' in navigator) {
-  // @ts-ignore - virtual:pwa-register es un módulo virtual de vite-plugin-pwa
-  import('virtual:pwa-register').then(({ registerSW }) => {
-    const updateSW = registerSW({
-      immediate: true,
-      onNeedRefresh() {
-        // Mostrar notificación cuando hay una actualización disponible
-        Swal.fire({
-          title: 'Actualización disponible',
-          text: 'Hay una nueva versión disponible. ¿Deseas actualizar?',
-          icon: 'info',
-          showCancelButton: true,
-          confirmButtonText: 'Actualizar',
-          cancelButtonText: 'Más tarde'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            updateSW(true);
-          }
-        });
-      },
-      onOfflineReady() {
-        console.log('App ready to work offline');
-      },
-    });
-  }).catch(() => {
-    // El módulo virtual solo está disponible cuando el plugin está activo
-    console.log('PWA register not available');
-  });
-}
-
 app.mount("#gymapp");
