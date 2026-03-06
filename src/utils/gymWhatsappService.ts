@@ -1,4 +1,4 @@
-/** Utilidades para notificaciones por WhatsApp para el sistema de gimnasios */
+/** Utilidades para notificaciones por WhatsApp para System Gym */
 
 import type { Membresia } from '@/types/gym';
 

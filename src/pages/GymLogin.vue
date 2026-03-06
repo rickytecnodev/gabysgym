@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-primary min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #01153a 0%, #1b294d 50%, #224a9d 100%);">
-    <div class="container">
+  <div class="login-page bg-primary d-flex align-items-center" style="background: linear-gradient(135deg, #01153a 0%, #1b294d 50%, #224a9d 100%); min-height: 100vh; margin-top: -70px; padding-top: 70px;">
+    <div class="container py-4">
       <div class="row justify-content-center">
         <div class="col-md-5 col-lg-4">
           <div class="card shadow-lg border-0 rounded-3">
@@ -148,3 +148,9 @@ const handleLogin = async () => {
 };
 </script>
 
+<style scoped>
+.login-page {
+  margin-top: -70px;
+  padding-top: 70px;
+}
+</style>

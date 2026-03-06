@@ -7,32 +7,37 @@ export function formatFecha(fecha: string | Date | null | undefined): string {
   if (!fecha) return '';
   
   try {
-    let fechaObj: Date;
+    let fechaStr: string;
     
-    // Convertir string a Date
-    if (typeof fecha === 'string') {
-      // Si es formato ISO con T, tomar solo la parte de fecha
-      if (fecha.includes('T')) {
-        fechaObj = new Date(fecha.split('T')[0] + 'T00:00:00');
-      } else if (fecha.includes(' ')) {
-        fechaObj = new Date(fecha.split(' ')[0] + 'T00:00:00');
-      } else {
-        // Si es formato YYYY-MM-DD, agregar hora para evitar problemas de zona horaria
-        fechaObj = new Date(fecha + 'T00:00:00');
-      }
+    // Convertir a string si es Date
+    if (fecha instanceof Date) {
+      fechaStr = fecha.toISOString();
     } else {
-      fechaObj = new Date(fecha);
+      fechaStr = fecha;
     }
     
-    // Validar que la fecha sea válida
-    if (isNaN(fechaObj.getTime())) {
+    // Extraer solo la parte de fecha (YYYY-MM-DD) sin considerar zona horaria
+    let fechaParte: string;
+    if (fechaStr.includes('T')) {
+      fechaParte = fechaStr.split('T')[0];
+    } else if (fechaStr.includes(' ')) {
+      fechaParte = fechaStr.split(' ')[0];
+    } else {
+      fechaParte = fechaStr;
+    }
+    
+    // Validar formato YYYY-MM-DD
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaParte)) {
       return '';
     }
     
-    // Obtener día, mes y año
-    const dia = fechaObj.getDate();
-    const mes = fechaObj.getMonth();
-    const año = fechaObj.getFullYear();
+    // Parsear directamente sin usar Date para evitar problemas de zona horaria
+    const [año, mes, dia] = fechaParte.split('-').map(Number);
+    
+    // Validar que los valores sean válidos
+    if (isNaN(año) || isNaN(mes) || isNaN(dia) || mes < 1 || mes > 12 || dia < 1 || dia > 31) {
+      return '';
+    }
     
     // Meses abreviados en español
     const meses = [
@@ -40,7 +45,7 @@ export function formatFecha(fecha: string | Date | null | undefined): string {
       'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
     ];
     
-    return `${dia}/${meses[mes]}/${año}`;
+    return `${dia}/${meses[mes - 1]}/${año}`;
   } catch (error) {
     console.error('Error al formatear fecha:', fecha, error);
     return '';

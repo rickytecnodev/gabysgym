@@ -1,4 +1,4 @@
-// Tipos para el sistema de gimnasios
+// Tipos para System Gym
 
 export interface Sucursal {
   id: number;
@@ -197,4 +197,21 @@ export interface ReporteMembresias {
   total_canceladas: number;
   por_vencer_7_dias: number;
   por_vencer_15_dias: number;
+}
+
+export interface BitacoraDia {
+  id: number;
+  empleado_id: number;
+  fecha: string;
+  tipo: 'incidente' | 'nota' | 'observacion';
+  descripcion: string;
+  created_at: string;
+  updated_at: string;
+  empleado?: Empleado | null;
+}
+
+export interface BitacoraDiaForm {
+  fecha: string;
+  tipo: 'incidente' | 'nota' | 'observacion';
+  descripcion: string;
 }

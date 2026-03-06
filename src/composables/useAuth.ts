@@ -62,6 +62,24 @@ const clearSession = () => {
   currentUser.value = null;
 };
 
+// Actualizar datos del usuario actual
+const refreshUser = async () => {
+  if (!currentUser.value) return;
+  
+  try {
+    const { fetchEmpleados } = await import('@/services/gymApi');
+    const { data } = await fetchEmpleados();
+    if (data) {
+      const updatedUser = data.find(u => u.id === currentUser.value?.id);
+      if (updatedUser) {
+        saveSession(updatedUser as User);
+      }
+    }
+  } catch (error) {
+    console.error('Error al actualizar usuario:', error);
+  }
+};
+
 // Inicializar al cargar el módulo
 loadSession();
 
@@ -73,6 +91,7 @@ export const useAuth = () => {
     currentSucursalId,
     saveSession,
     clearSession,
-    loadSession
+    loadSession,
+    refreshUser
   };
 };

@@ -14,7 +14,9 @@ import type {
   MembresiaForm,
   PagoMembresiaForm,
   ReporteVentas,
-  ReporteMembresias
+  ReporteMembresias,
+  BitacoraDia,
+  BitacoraDiaForm
 } from '@/types/gym';
 
 const DEBUG = true;
@@ -1026,4 +1028,75 @@ export async function getReporteMembresias(
   }
 
   return { data: reporte, error: null };
+}
+
+// ============================================
+// BITÁCORAS DEL DÍA
+// ============================================
+
+export async function fetchBitacorasDia(
+  empleadoId?: number | null,
+  fechaDesde?: string | null,
+  fechaHasta?: string | null,
+  sucursalId?: number | null
+): Promise<{ data: BitacoraDia[] | null; error: { message: string } | null }> {
+  let query = supabase
+    .from('bitacoras_dia')
+    .select('*, empleado:empleados(*, sucursal:sucursales(*))')
+    .order('fecha', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  if (empleadoId) {
+    query = query.eq('empleado_id', empleadoId);
+  }
+
+  if (fechaDesde) {
+    query = query.gte('fecha', fechaDesde);
+  }
+
+  if (fechaHasta) {
+    query = query.lte('fecha', fechaHasta);
+  }
+
+  const { data, error } = await query;
+
+  // Filtrar por sucursal después de obtener los datos (porque necesitamos la relación empleado->sucursal)
+  let filteredData = data;
+  if (sucursalId && data) {
+    filteredData = data.filter((bitacora: any) => 
+      bitacora.empleado?.sucursal_id === sucursalId
+    );
+  }
+
+  if (error) {
+    log('fetchBitacorasDia ERROR', error);
+    return { data: null, error };
+  }
+
+  log('fetchBitacorasDia OK', filteredData?.length || 0);
+  return { data: filteredData as BitacoraDia[], error: null };
+}
+
+export async function createBitacoraDia(
+  empleadoId: number,
+  payload: BitacoraDiaForm
+): Promise<{ data: BitacoraDia | null; error: { message: string } | null }> {
+  const { data, error } = await supabase
+    .from('bitacoras_dia')
+    .insert({
+      empleado_id: empleadoId,
+      fecha: payload.fecha,
+      tipo: payload.tipo,
+      descripcion: payload.descripcion
+    })
+    .select('*, empleado:empleados(*, sucursal:sucursales(*))')
+    .single();
+
+  if (error) {
+    log('createBitacoraDia ERROR', error);
+    return { data: null, error };
+  }
+
+  log('createBitacoraDia OK', data.id);
+  return { data: data as BitacoraDia, error: null };
 }

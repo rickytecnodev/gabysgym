@@ -123,6 +123,17 @@ CREATE TABLE IF NOT EXISTS public.pagos_membresia (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Tabla de bitácoras del día
+CREATE TABLE IF NOT EXISTS public.bitacoras_dia (
+    id BIGSERIAL PRIMARY KEY,
+    empleado_id BIGINT NOT NULL REFERENCES public.empleados(id) ON DELETE RESTRICT,
+    fecha DATE NOT NULL,
+    tipo VARCHAR(50) DEFAULT 'nota', -- 'incidente', 'nota', 'observacion', etc.
+    descripcion TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Índices para mejorar el rendimiento
 CREATE INDEX IF NOT EXISTS idx_empleados_username ON public.empleados(username);
 CREATE INDEX IF NOT EXISTS idx_empleados_sucursal ON public.empleados(sucursal_id);
@@ -141,6 +152,8 @@ CREATE INDEX IF NOT EXISTS idx_membresias_sucursal ON public.membresias(sucursal
 CREATE INDEX IF NOT EXISTS idx_membresias_estado ON public.membresias(estado);
 CREATE INDEX IF NOT EXISTS idx_membresias_vencimiento ON public.membresias(fecha_vencimiento);
 CREATE INDEX IF NOT EXISTS idx_pagos_membresia ON public.pagos_membresia(membresia_id);
+CREATE INDEX IF NOT EXISTS idx_bitacoras_dia_empleado ON public.bitacoras_dia(empleado_id);
+CREATE INDEX IF NOT EXISTS idx_bitacoras_dia_fecha ON public.bitacoras_dia(fecha);
 
 -- Función para actualizar updated_at automáticamente
 CREATE OR REPLACE FUNCTION update_updated_at_column()

@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['img/logo.png'],
       manifest: {
-        name: 'Sistema de Gestión de Gimnasios',
-        short_name: 'Gym System',
-        description: 'Sistema de gestión para cadena de gimnasios',
+        name: 'System Gym',
+        short_name: 'System Gym',
+        description: 'System Gym - Sistema de gestión para gimnasios',
         theme_color: '#224a9d',
         background_color: '#ffffff',
         display: 'standalone',

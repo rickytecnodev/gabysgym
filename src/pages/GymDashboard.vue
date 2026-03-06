@@ -6,7 +6,7 @@
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Cargando...</span>
         </div>
-        <p class="mt-3 text-muted">Cargando dashboard...</p>
+        <p class="mt-3 text-muted">Cargando inicio...</p>
       </div>
     </div>
     <div v-else-if="error" class="container-fluid py-4">
@@ -19,7 +19,7 @@
     </div>
     <div v-else class="container-fluid py-4">
       <div class="mb-4">
-        <h1 class="h3 mb-0">Dashboard</h1>
+        <h1 class="h3 mb-0">Inicio</h1>
       </div>
 
       <!-- Selector de sucursal (solo para superadmin) -->
@@ -157,6 +157,25 @@
             </div>
           </div>
         </div>
+        <div class="col-md-3">
+          <div 
+            @click="stats.bitacorasHoy > 0 ? navegarABitacoras() : null" 
+            :class="['card border-0 shadow-sm h-100', stats.bitacorasHoy > 0 ? 'hover-card' : 'opacity-50']" 
+            :style="stats.bitacorasHoy > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'"
+          >
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="text-muted mb-1">Bitácoras Hoy</h6>
+                  <h3 class="mb-0">{{ stats.bitacorasHoy }}</h3>
+                </div>
+                <div class="text-info">
+                  <i class="fa-solid fa-book fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Navegación rápida -->
@@ -216,7 +235,30 @@
             </div>
           </router-link>
         </div>
+        <div class="col-md-3">
+          <router-link to="/gym/bitacoras" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fa-solid fa-book fa-3x text-info mb-3"></i>
+                <h5>Bitácoras</h5>
+                <p class="text-muted mb-0">Bitácora del día</p>
+              </div>
+            </div>
+          </router-link>
+        </div>
+        <div class="col-md-3" v-if="isSuperadmin">
+          <router-link to="/gym/usuarios" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fa-solid fa-user-gear fa-3x text-primary mb-3"></i>
+                <h5>Usuarios</h5>
+                <p class="text-muted mb-0">Gestionar usuarios</p>
+              </div>
+            </div>
+          </router-link>
+        </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -226,13 +268,16 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { useGymFilters } from '@/composables/useGymFilters';
+import { useBitacoras } from '@/composables/useBitacoras';
 import { fetchVentas, fetchMembresias, fetchPagosMembresiaConFiltros, fetchClientes, fetchSucursales } from '@/services/gymApi';
+import { getFechaActualLocal } from '@/utils/dateFormatter';
 import type { Sucursal } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
 
 const router = useRouter();
-const { currentSucursalId, isSuperadmin, isAuthenticated } = useAuth();
+const { currentSucursalId, isSuperadmin, isAuthenticated, currentUser } = useAuth();
 const { setFilters } = useGymFilters();
+const { bitacoras: bitacorasData, loadBitacoras } = useBitacoras();
 
 const sucursales = ref<Sucursal[]>([]);
 const sucursalSeleccionada = ref<number | null>(null);
@@ -243,7 +288,8 @@ const stats = ref({
   membresiasPorVencer: 0,
   membresiasVencidas: 0,
   ventasPendientes: 0,
-  clientes: 0
+  clientes: 0,
+  bitacorasHoy: 0
 });
 
 const navegarAVentas = (periodo?: string, estado?: string) => {
@@ -273,8 +319,13 @@ const navegarAMembresiasPorVencer = () => {
   router.push('/gym/membresias');
 };
 
+const navegarABitacoras = () => {
+  router.push('/gym/bitacoras');
+};
+
 const loading = ref(true);
 const error = ref<string | null>(null);
+
 
 onMounted(async () => {
   try {
@@ -297,13 +348,38 @@ onMounted(async () => {
     }
     
     await loadStats();
+    await loadBitacorasStats();
   } catch (err: any) {
-    console.error('Error al cargar dashboard:', err);
-    error.value = err.message || 'Error al cargar el dashboard';
+    console.error('Error al cargar inicio:', err);
+    error.value = err.message || 'Error al cargar el inicio';
   } finally {
     loading.value = false;
   }
 });
+
+const loadBitacorasStats = async () => {
+  try {
+    const hoy = getFechaActualLocal();
+    // Determinar la sucursal a usar para filtrar
+    const sucursalId = isSuperadmin.value 
+      ? (sucursalSeleccionada.value || null)
+      : currentSucursalId.value;
+    
+    if (isSuperadmin.value) {
+      // Superadmin: cargar todas las bitácoras y contar solo las que NO son de él y pertenecen a la sucursal seleccionada
+      await loadBitacoras(null, hoy, hoy, sucursalId);
+      stats.value.bitacorasHoy = bitacorasData.value.filter(b => 
+        b.fecha === hoy && b.empleado_id !== currentUser.value?.id
+      ).length;
+    } else {
+      // Empleado: contar solo sus propias bitácoras
+      await loadBitacoras(currentUser.value?.id, hoy, hoy, null);
+      stats.value.bitacorasHoy = bitacorasData.value.filter(b => b.fecha === hoy).length;
+    }
+  } catch (error) {
+    console.error('Error al cargar bitácoras:', error);
+  }
+};
 
 const loadStats = async () => {
   try {
@@ -424,10 +500,13 @@ const loadStats = async () => {
     } else if (clientes) {
       stats.value.clientes = clientes.length;
     }
-  } catch (error) {
-    console.error('Error en loadStats:', error);
-  }
-};
+    } catch (error) {
+      console.error('Error en loadStats:', error);
+    }
+    
+    // Recargar bitácoras cuando cambian las estadísticas (por el filtro de sucursal)
+    await loadBitacorasStats();
+  };
 
 </script>
 

@@ -3,7 +3,7 @@
     <div class="container-fluid">
       <router-link class="navbar-brand fw-bold" to="/gym/dashboard">
         <i class="fa-solid fa-dumbbell me-2"></i>
-        Sistema de Gimnasios
+        System Gym
       </router-link>
       <button 
         class="navbar-toggler border-0" 
@@ -23,7 +23,7 @@
               @click="closeMenu"
             >
               <i class="fa-solid fa-home me-2"></i>
-              Dashboard
+              Inicio
             </router-link>
           </li>
           <li class="nav-item">
@@ -70,17 +70,7 @@
               Clientes
             </router-link>
           </li>
-          <li class="nav-item" v-if="isSuperadmin">
-            <router-link 
-              to="/gym/usuarios" 
-              class="nav-link px-3" 
-              active-class="active"
-              @click="closeMenu"
-            >
-              <i class="fa-solid fa-user-gear me-2"></i>
-              Usuarios
-            </router-link>
-          </li>
+
           <li class="nav-item">
             <router-link 
               to="/gym/reportes" 
@@ -90,6 +80,17 @@
             >
               <i class="fa-solid fa-chart-bar me-2"></i>
               Reportes
+            </router-link>
+          </li>
+          <li class="nav-item" v-if="isSuperadmin">
+            <router-link 
+              to="/gym/usuarios" 
+              class="nav-link px-3" 
+              active-class="active"
+              @click="closeMenu"
+            >
+              <i class="fa-solid fa-user-gear me-2"></i>
+              Usuarios
             </router-link>
           </li>
         </ul>
@@ -122,6 +123,18 @@
                 </div>
               </li>
               <li><hr class="dropdown-divider my-2"></li>
+              <li>
+                <router-link to="/gym/perfil" class="dropdown-item" @click="closeMenu">
+                  <i class="fa-solid fa-user-edit me-2"></i>
+                  Editar Datos
+                </router-link>
+              </li>
+              <li>
+                <router-link to="/gym/bitacoras" class="dropdown-item" @click="closeMenu">
+                  <i class="fa-solid fa-book me-2"></i>
+                  Bitácora del Día
+                </router-link>
+              </li>
               <li>
                 <a class="dropdown-item" href="#" @click.prevent="handleLogout">
                   <i class="fa-solid fa-sign-out-alt me-2"></i>

@@ -7,6 +7,8 @@ import GymMembresias from '@/pages/GymMembresias.vue';
 import GymClientes from '@/pages/GymClientes.vue';
 import GymReportes from '@/pages/GymReportes.vue';
 import GymUsuarios from '@/pages/GymUsuarios.vue';
+import GymBitacoras from '@/pages/GymBitacoras.vue';
+import GymPerfil from '@/pages/GymPerfil.vue';
 import { useAuth } from '@/composables/useAuth';
 
 const routes: RouteRecordRaw[] = [
@@ -61,6 +63,18 @@ const routes: RouteRecordRaw[] = [
     name: 'GymUsuarios',
     component: GymUsuarios,
     meta: { requiresAuth: true, requiresSuperadmin: true }
+  },
+  {
+    path: '/gym/bitacoras',
+    name: 'GymBitacoras',
+    component: GymBitacoras,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/gym/perfil',
+    name: 'GymPerfil',
+    component: GymPerfil,
+    meta: { requiresAuth: true }
   },
   {
     path: '/gym',
