@@ -97,6 +97,7 @@
                       <i class="fa-solid fa-user-edit"></i>
                     </button>
                     <button 
+                      v-if="isSuperadmin"
                       @click.stop="$emit('eliminar', membresia)" 
                       class="btn btn-sm btn-outline-danger"
                       title="Eliminar membresía"
@@ -127,6 +128,7 @@
 
 <script setup lang="ts">
 import type { Membresia } from '@/types/gym';
+import { formatFecha } from '@/utils/dateFormatter';
 
 defineProps<{
   membresias: Membresia[];
@@ -146,31 +148,6 @@ defineEmits<{
   'eliminar': [membresia: Membresia];
 }>();
 
-const formatFecha = (fecha: string) => {
-  let fechaStr = '';
-  if (typeof fecha === 'string') {
-    if (fecha.includes('T')) {
-      fechaStr = fecha.split('T')[0];
-    } else if (fecha.includes(' ')) {
-      fechaStr = fecha.split(' ')[0];
-    } else {
-      fechaStr = fecha;
-    }
-  } else {
-    const fechaObj = new Date(fecha);
-    const año = fechaObj.getFullYear();
-    const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
-    const dia = String(fechaObj.getDate()).padStart(2, '0');
-    fechaStr = `${año}-${mes}-${dia}`;
-  }
-  
-  const partes = fechaStr.split('-');
-  if (partes.length === 3) {
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
-  }
-  
-  return new Date(fecha).toLocaleDateString('es-MX');
-};
 
 const getEstadoBadgeClass = (estado: string) => {
   const clases: Record<string, string> = {

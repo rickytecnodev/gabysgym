@@ -77,6 +77,78 @@ export async function loginEmpleado(
   return { data: data as Empleado, error: null };
 }
 
+export async function fetchEmpleados(): Promise<{ data: Empleado[] | null; error: { message: string } | null }> {
+  const { data, error } = await supabase
+    .from('empleados')
+    .select('*, sucursal:sucursales(*)')
+    .order('nombre_completo');
+
+  if (error) {
+    log('fetchEmpleados ERROR', error);
+    return { data: null, error };
+  }
+  log('fetchEmpleados OK', data?.length ?? 0);
+  return { data: (data as Empleado[]) || [], error: null };
+}
+
+export async function createEmpleado(
+  payload: { username: string; password: string; email?: string | null; nombre_completo: string; telefono?: string | null; rol: 'superadmin' | 'empleado'; sucursal_id?: number | null; activo: boolean }
+): Promise<{ data: Empleado | null; error: { message: string } | null }> {
+  const { data, error } = await supabase
+    .from('empleados')
+    .insert(payload)
+    .select('*, sucursal:sucursales(*)')
+    .single();
+
+  if (error) {
+    log('createEmpleado ERROR', error);
+    return { data: null, error };
+  }
+  log('createEmpleado OK', data.id);
+  return { data: data as Empleado, error: null };
+}
+
+export async function updateEmpleado(
+  id: number,
+  payload: { username?: string; password?: string; email?: string | null; nombre_completo?: string; telefono?: string | null; rol?: 'superadmin' | 'empleado'; sucursal_id?: number | null; activo?: boolean }
+): Promise<{ data: Empleado | null; error: { message: string } | null }> {
+  // Si no se proporciona password, no actualizarlo
+  const updatePayload = { ...payload };
+  if (!updatePayload.password) {
+    delete (updatePayload as any).password;
+  }
+
+  const { data, error } = await supabase
+    .from('empleados')
+    .update(updatePayload)
+    .eq('id', id)
+    .select('*, sucursal:sucursales(*)')
+    .single();
+
+  if (error) {
+    log('updateEmpleado ERROR', error);
+    return { data: null, error };
+  }
+  log('updateEmpleado OK', data.id);
+  return { data: data as Empleado, error: null };
+}
+
+export async function deleteEmpleado(
+  id: number
+): Promise<{ error: { message: string } | null }> {
+  const { error } = await supabase
+    .from('empleados')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    log('deleteEmpleado ERROR', error);
+    return { error };
+  }
+  log('deleteEmpleado OK', id);
+  return { error: null };
+}
+
 // ============================================
 // CLIENTES
 // ============================================
@@ -298,6 +370,14 @@ export async function createVenta(
     });
   }
 
+  // Obtener la fecha actual en formato local (YYYY-MM-DD)
+  // Usar la fecha local del día actual para evitar problemas de zona horaria
+  const hoy = new Date();
+  const año = hoy.getFullYear();
+  const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoy.getDate()).padStart(2, '0');
+  const fechaVentaLocal = `${año}-${mes}-${dia}T00:00:00`; // Fecha local del día actual a medianoche
+
   // Crear la venta
   const { data: venta, error: ventaError } = await supabase
     .from('ventas')
@@ -305,6 +385,7 @@ export async function createVenta(
       sucursal_id: payload.sucursal_id,
       empleado_id: payload.empleado_id,
       cliente_id: payload.cliente_id || null,
+      fecha_venta: fechaVentaLocal,
       total,
       estado_pago: payload.estado_pago,
       notas: payload.notas || null
@@ -355,6 +436,69 @@ export async function createVenta(
   return { data: ventaCompleta as Venta, error: null };
 }
 
+export async function deleteVenta(
+  id: number
+): Promise<{ error: { message: string } | null }> {
+  const { error } = await supabase
+    .from('ventas')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    log('deleteVenta ERROR', error);
+    return { error };
+  }
+  log('deleteVenta OK', id);
+  return { error: null };
+}
+
+export async function updateVenta(
+  id: number,
+  payload: { 
+    cliente_id?: number | null; 
+    total?: number; 
+    estado_pago?: 'pagado' | 'pendiente' | 'cancelado'; 
+    notas?: string | null;
+    detalles?: Array<{ producto_id: number; cantidad: number; precio_unitario: number; subtotal: number }>;
+  }
+): Promise<{ data: Venta | null; error: { message: string } | null }> {
+  // Si se proporcionan detalles, actualizar los detalles de la venta
+  if (payload.detalles) {
+    // Eliminar detalles existentes
+    await supabase.from('venta_detalles').delete().eq('venta_id', id);
+    
+    // Insertar nuevos detalles
+    const detallesConVentaId = payload.detalles.map(d => ({ ...d, venta_id: id }));
+    const { error: detallesError } = await supabase.from('venta_detalles').insert(detallesConVentaId);
+    
+    if (detallesError) {
+      log('updateVenta ERROR en detalles', detallesError);
+      return { data: null, error: detallesError };
+    }
+  }
+
+  // Actualizar la venta
+  const updatePayload: any = {};
+  if (payload.cliente_id !== undefined) updatePayload.cliente_id = payload.cliente_id;
+  if (payload.total !== undefined) updatePayload.total = payload.total;
+  if (payload.estado_pago !== undefined) updatePayload.estado_pago = payload.estado_pago;
+  if (payload.notas !== undefined) updatePayload.notas = payload.notas;
+
+  const { data, error } = await supabase
+    .from('ventas')
+    .update(updatePayload)
+    .eq('id', id)
+    .select('*, sucursal:sucursales(*), empleado:empleados(*), cliente:clientes(*), detalles:venta_detalles(*, producto:productos(*))')
+    .single();
+
+  if (error) {
+    log('updateVenta ERROR', error);
+    return { data: null, error };
+  }
+  log('updateVenta OK', data.id);
+  return { data: data as Venta, error: null };
+}
+
 export async function updateVentaEstado(
   id: number,
   estado: 'pagado' | 'pendiente' | 'cancelado'
@@ -382,7 +526,6 @@ export async function fetchTiposMembresia(): Promise<{ data: TipoMembresia[] | n
   const { data, error } = await supabase
     .from('tipos_membresia')
     .select('*')
-    .eq('activa', true)
     .order('precio_mensual');
 
   if (error) {
@@ -391,6 +534,58 @@ export async function fetchTiposMembresia(): Promise<{ data: TipoMembresia[] | n
   }
   log('fetchTiposMembresia OK', data?.length ?? 0);
   return { data: (data as TipoMembresia[]) || [], error: null };
+}
+
+export async function createTipoMembresia(
+  payload: { nombre: string; descripcion?: string | null; precio_mensual: number; duracion_dias: number; activa: boolean }
+): Promise<{ data: TipoMembresia | null; error: { message: string } | null }> {
+  const { data, error } = await supabase
+    .from('tipos_membresia')
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    log('createTipoMembresia ERROR', error);
+    return { data: null, error };
+  }
+  log('createTipoMembresia OK', data.id);
+  return { data: data as TipoMembresia, error: null };
+}
+
+export async function updateTipoMembresia(
+  id: number,
+  payload: { nombre?: string; descripcion?: string | null; precio_mensual?: number; duracion_dias?: number; activa?: boolean }
+): Promise<{ data: TipoMembresia | null; error: { message: string } | null }> {
+  const { data, error } = await supabase
+    .from('tipos_membresia')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    log('updateTipoMembresia ERROR', error);
+    return { data: null, error };
+  }
+  log('updateTipoMembresia OK', data.id);
+  return { data: data as TipoMembresia, error: null };
+}
+
+export async function deleteTipoMembresia(
+  id: number
+): Promise<{ error: { message: string } | null }> {
+  const { error } = await supabase
+    .from('tipos_membresia')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    log('deleteTipoMembresia ERROR', error);
+    return { error };
+  }
+  log('deleteTipoMembresia OK', id);
+  return { error: null };
 }
 
 // ============================================
@@ -634,6 +829,41 @@ export async function createPagoMembresia(
   }
   log('createPagoMembresia OK', data.id);
   return { data: data as PagoMembresia, error: null };
+}
+
+export async function updatePagoMembresia(
+  id: number,
+  payload: { fecha_pago?: string; monto?: number; mes_pagado?: string; metodo_pago?: string | null; notas?: string | null }
+): Promise<{ data: PagoMembresia | null; error: { message: string } | null }> {
+  const { data, error } = await supabase
+    .from('pagos_membresia')
+    .update(payload)
+    .eq('id', id)
+    .select('*, membresia:membresias(*), empleado:empleados(*)')
+    .single();
+
+  if (error) {
+    log('updatePagoMembresia ERROR', error);
+    return { data: null, error };
+  }
+  log('updatePagoMembresia OK', data.id);
+  return { data: data as PagoMembresia, error: null };
+}
+
+export async function deletePagoMembresia(
+  id: number
+): Promise<{ error: { message: string } | null }> {
+  const { error } = await supabase
+    .from('pagos_membresia')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    log('deletePagoMembresia ERROR', error);
+    return { error };
+  }
+  log('deletePagoMembresia OK', id);
+  return { error: null };
 }
 
 // ============================================

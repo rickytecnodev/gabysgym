@@ -32,6 +32,8 @@
             :filtro-sucursal="filtroSucursal"
             :loading="loadingDataVentas"
             @ver-detalle="verDetalleVenta"
+            @editar="editarVenta"
+            @eliminar="eliminarVenta"
           />
         </template>
         <template #membresias>
@@ -41,6 +43,8 @@
             :filtro-sucursal="filtroSucursal"
             :loading="loadingDataVentas"
             @ver-detalle="verDetalleMembresia"
+            @editar="editarPagoMembresia"
+            @eliminar="eliminarPagoMembresia"
           />
         </template>
       </TabsVentas>
@@ -259,7 +263,7 @@
                   <div class="col-md-6">
                     <p><strong>Fecha de Pago:</strong> {{ formatFecha(pagoMembresiaDetalle.fecha_pago) }}</p>
                     <p><strong>Monto:</strong> ${{ pagoMembresiaDetalle.monto.toFixed(2) }}</p>
-                    <p><strong>Mes Pagado:</strong> {{ pagoMembresiaDetalle.mes_pagado }}</p>
+                    <p><strong>Mes Pagado:</strong> {{ formatMesPagado(pagoMembresiaDetalle.mes_pagado) }}</p>
                   </div>
                   <div class="col-md-6">
                     <p><strong>Método de Pago:</strong> {{ pagoMembresiaDetalle.metodo_pago || 'N/A' }}</p>
@@ -275,6 +279,174 @@
           </div>
         </div>
       </div>
+
+      <!-- Modal de editar pago de membresía -->
+      <div v-if="showModalEditarPago" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Editar Pago de Membresía</h5>
+              <button type="button" class="btn-close" @click="cerrarModalEditarPago"></button>
+            </div>
+            <div class="modal-body">
+              <form @submit.prevent="guardarPagoEditado">
+                <div class="mb-3">
+                  <label class="form-label">Fecha de Pago *</label>
+                  <input v-model="formPagoEdit.fecha_pago" type="date" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Monto *</label>
+                  <input v-model.number="formPagoEdit.monto" type="number" step="0.01" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Mes Pagado *</label>
+                  <input 
+                    v-model="formPagoEdit.mes_pagado" 
+                    type="month" 
+                    class="form-control" 
+                    required
+                  >
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Método de Pago</label>
+                  <select v-model="formPagoEdit.metodo_pago" class="form-select">
+                    <option value="">Selecciona...</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="transferencia">Transferencia</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Notas</label>
+                  <textarea v-model="formPagoEdit.notas" class="form-control" rows="2"></textarea>
+                </div>
+                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" @click="cerrarModalEditarPago">Cancelar</button>
+                  <button type="submit" class="btn btn-primary" :disabled="loading">
+                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                    Guardar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal de editar venta -->
+      <div v-if="showModalEditarVenta" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Editar Venta #{{ ventaEditando?.id }}</h5>
+              <button type="button" class="btn-close" @click="cerrarModalEditarVenta"></button>
+            </div>
+            <div class="modal-body">
+              <form @submit.prevent="guardarVentaEditada">
+                <div class="mb-3">
+                  <label class="form-label">Agregar Producto</label>
+                  <div class="row g-2 mb-2">
+                    <div class="col-md-4">
+                      <select v-model.number="productoSeleccionadoEdit" class="form-select">
+                        <option :value="null">Selecciona un producto</option>
+                        <option v-for="producto in productosDisponibles" :key="producto.id" :value="producto.id">
+                          {{ producto.nombre }} - ${{ producto.precio.toFixed(2) }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-md-2">
+                      <input v-model.number="cantidadProductoEdit" type="number" min="1" class="form-control" placeholder="Cantidad">
+                    </div>
+                    <div class="col-md-3">
+                      <input v-model.number="precioProductoEdit" type="number" step="0.01" min="0" class="form-control" placeholder="Precio (opcional)">
+                      <small class="text-muted">Dejar en 0 para usar precio del producto</small>
+                    </div>
+                    <div class="col-md-3">
+                      <button type="button" @click="agregarProductoEdit" class="btn btn-primary w-100">
+                        <i class="fa-solid fa-plus me-1"></i>
+                        Agregar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="productosVentaEdit.length > 0" class="mb-3">
+                  <label class="form-label">Productos en la Venta</label>
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Producto</th>
+                          <th>Cantidad</th>
+                          <th>Precio Unitario</th>
+                          <th>Subtotal</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(item, index) in productosVentaEdit" :key="index">
+                          <td>{{ item.nombre }}</td>
+                          <td>
+                            <input 
+                              v-model.number="item.cantidad" 
+                              type="number" 
+                              min="1" 
+                              class="form-control form-control-sm"
+                              @change="item.subtotal = item.cantidad * item.precio_unitario"
+                            >
+                          </td>
+                          <td>
+                            <input 
+                              v-model.number="item.precio_unitario" 
+                              type="number" 
+                              step="0.01" 
+                              min="0" 
+                              class="form-control form-control-sm"
+                              @change="item.subtotal = item.cantidad * item.precio_unitario"
+                            >
+                          </td>
+                          <td>${{ item.subtotal.toFixed(2) }}</td>
+                          <td>
+                            <button type="button" @click="eliminarProductoEdit(index)" class="btn btn-sm btn-outline-danger">
+                              <i class="fa-solid fa-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <th colspan="3" class="text-end">Total:</th>
+                          <th>${{ productosVentaEdit.reduce((sum, item) => sum + item.subtotal, 0).toFixed(2) }}</th>
+                          <th></th>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Estado de Pago *</label>
+                  <select v-model="estadoPagoEdit" class="form-select" required>
+                    <option value="pagado">Pagado</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="cancelado">Cancelado</option>
+                  </select>
+                </div>
+
+                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" @click="cerrarModalEditarVenta">Cancelar</button>
+                  <button type="submit" class="btn btn-primary" :disabled="loading">
+                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                    Guardar Cambios
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -284,9 +456,12 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useGymFilters } from '@/composables/useGymFilters';
 import { useVentas } from '@/composables/useVentas';
+import { deleteVenta, updateVenta, updatePagoMembresia, deletePagoMembresia } from '@/services/gymApi';
 import type { Venta, VentaForm, PagoMembresia } from '@/types/gym';
 import Swal from 'sweetalert2';
+import { getFechaHoraActualLocal, getFechaActualLocal } from '@/utils/dateFormatter';
 import GymNavbar from '@/components/GymNavbar.vue';
+import { formatFecha, formatMesPagado } from '@/utils/dateFormatter';
 import FiltrosVentas from '@/components/ventas/FiltrosVentas.vue';
 import TabsVentas from '@/components/ventas/TabsVentas.vue';
 import TablaVentasProductos from '@/components/ventas/TablaVentasProductos.vue';
@@ -313,13 +488,17 @@ const {
 const showModal = ref(false);
 const showDetalleModal = ref(false);
 const showDetalleMembresiaModal = ref(false);
+const showModalEditarPago = ref(false);
+const showModalEditarVenta = ref(false);
 const ventaDetalle = ref<Venta | null>(null);
 const pagoMembresiaDetalle = ref<PagoMembresia | null>(null);
+const pagoEditando = ref<PagoMembresia | null>(null);
+const ventaEditando = ref<Venta | null>(null);
 const tabActivo = ref<'productos' | 'membresias'>('productos');
 const loading = ref(false);
 const errorMessage = ref('');
-const filtroFechaDesde = ref('');
-const filtroFechaHasta = ref('');
+const filtroFechaDesde = ref(getFechaActualLocal());
+const filtroFechaHasta = ref(getFechaActualLocal());
 const filtroEstado = ref('');
 const filtroSucursal = ref<number | null>(null);
 const periodoActivo = ref<string>('');
@@ -328,6 +507,20 @@ const sucursalSeleccionada = ref<number | null>(null);
 const productoSeleccionado = ref<number | null>(null);
 const cantidadProducto = ref(1);
 const productosVenta = ref<Array<{ producto_id: number; cantidad: number; precio: number; nombre: string }>>([]);
+
+const formPagoEdit = ref({
+  fecha_pago: '',
+  monto: 0,
+  mes_pagado: '',
+  metodo_pago: '',
+  notas: ''
+});
+
+const productosVentaEdit = ref<Array<{ producto_id: number; cantidad: number; precio_unitario: number; subtotal: number; nombre: string }>>([]);
+const productoSeleccionadoEdit = ref<number | null>(null);
+const cantidadProductoEdit = ref(1);
+const precioProductoEdit = ref(0);
+const estadoPagoEdit = ref<'pagado' | 'pendiente' | 'cancelado'>('pagado');
 
 const formVenta = ref<VentaForm>({
   cliente_id: null,
@@ -386,6 +579,9 @@ onMounted(async () => {
     }
     
     clearFilters();
+  } else {
+    // Si no hay filtros guardados, aplicar el filtro rápido de "hoy" por defecto
+    aplicarPeriodo('hoy');
   }
   
   await loadVentas();
@@ -466,16 +662,20 @@ const loadVentas = async () => {
     ? (filtroSucursal.value || null) 
     : currentSucursalId.value;
   
+  const empleadoId = isSuperadmin.value ? null : currentUser.value?.id || null;
+  
   await loadVentasFromComposable(
     sucursalId,
     fechaDesde || undefined,
-    fechaHasta || undefined
+    fechaHasta || undefined,
+    empleadoId
   );
   
   await loadPagosMembresiaFromComposable(
     sucursalId,
     fechaDesde || undefined,
-    fechaHasta || undefined
+    fechaHasta || undefined,
+    empleadoId
   );
 };
 
@@ -601,8 +801,238 @@ const marcarPagadoDesdeDetalle = async () => {
   }
 };
 
-const formatFecha = (fecha: string) => {
-  return new Date(fecha).toLocaleDateString('es-MX');
+const editarVenta = (venta: Venta) => {
+  ventaEditando.value = venta;
+  
+  // Cargar los productos de la venta en el formulario de edición
+  if (venta.detalles && venta.detalles.length > 0) {
+    productosVentaEdit.value = venta.detalles.map(detalle => ({
+      producto_id: detalle.producto_id,
+      cantidad: detalle.cantidad,
+      precio_unitario: detalle.precio_unitario,
+      subtotal: detalle.subtotal,
+      nombre: detalle.producto?.nombre || 'Producto'
+    }));
+  } else {
+    productosVentaEdit.value = [];
+  }
+  
+  estadoPagoEdit.value = venta.estado_pago || 'pagado';
+  errorMessage.value = '';
+  showModalEditarVenta.value = true;
 };
+
+const cerrarModalEditarVenta = () => {
+  showModalEditarVenta.value = false;
+  ventaEditando.value = null;
+  productosVentaEdit.value = [];
+  productoSeleccionadoEdit.value = null;
+  cantidadProductoEdit.value = 1;
+  precioProductoEdit.value = 0;
+  estadoPagoEdit.value = 'pagado';
+  errorMessage.value = '';
+};
+
+const agregarProductoEdit = () => {
+  if (!productoSeleccionadoEdit.value) {
+    errorMessage.value = 'Debes seleccionar un producto';
+    return;
+  }
+
+  const producto = productosDisponibles.value.find(p => p.id === productoSeleccionadoEdit.value);
+  if (!producto) {
+    errorMessage.value = 'Producto no encontrado';
+    return;
+  }
+
+  const precio = precioProductoEdit.value > 0 ? precioProductoEdit.value : producto.precio;
+  const subtotal = precio * cantidadProductoEdit.value;
+
+  productosVentaEdit.value.push({
+    producto_id: productoSeleccionadoEdit.value,
+    cantidad: cantidadProductoEdit.value,
+    precio_unitario: precio,
+    subtotal: subtotal,
+    nombre: producto.nombre
+  });
+
+  productoSeleccionadoEdit.value = null;
+  cantidadProductoEdit.value = 1;
+  precioProductoEdit.value = 0;
+  errorMessage.value = '';
+};
+
+const eliminarProductoEdit = (index: number) => {
+  productosVentaEdit.value.splice(index, 1);
+};
+
+const guardarVentaEditada = async () => {
+  if (!ventaEditando.value) return;
+
+  if (productosVentaEdit.value.length === 0) {
+    errorMessage.value = 'Debes agregar al menos un producto';
+    return;
+  }
+
+  loading.value = true;
+  errorMessage.value = '';
+
+  try {
+    const detalles = productosVentaEdit.value.map(p => ({
+      producto_id: p.producto_id,
+      cantidad: p.cantidad,
+      precio_unitario: p.precio_unitario,
+      subtotal: p.subtotal
+    }));
+
+    const total = productosVentaEdit.value.reduce((sum, item) => sum + item.subtotal, 0);
+
+    const { error } = await updateVenta(ventaEditando.value.id, {
+      total: total,
+      estado_pago: estadoPagoEdit.value,
+      detalles: detalles
+    });
+
+    if (error) {
+      errorMessage.value = error.message;
+      loading.value = false;
+      return;
+    }
+
+    Swal.fire('Éxito', 'Venta actualizada correctamente', 'success');
+    cerrarModalEditarVenta();
+    await loadVentas();
+    if (showDetalleModal.value && ventaDetalle.value?.id === ventaEditando.value.id) {
+      showDetalleModal.value = false;
+    }
+  } catch (error: any) {
+    errorMessage.value = error.message || 'Error al actualizar venta';
+  } finally {
+    loading.value = false;
+  }
+};
+
+const eliminarVenta = async (venta: Venta) => {
+  if (!isSuperadmin.value) {
+    Swal.fire('Error', 'Solo el superadmin puede eliminar ventas', 'error');
+    return;
+  }
+
+  const result = await Swal.fire({
+    title: '¿Eliminar venta?',
+    text: `¿Estás seguro de eliminar la venta #${venta.id}? Esta acción no se puede deshacer.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#dc3545'
+  });
+
+  if (result.isConfirmed) {
+    const { error } = await deleteVenta(venta.id);
+    if (error) {
+      Swal.fire('Error', error.message, 'error');
+    } else {
+      Swal.fire('Éxito', 'Venta eliminada correctamente', 'success');
+      await loadVentas();
+      if (showDetalleModal.value && ventaDetalle.value?.id === venta.id) {
+        showDetalleModal.value = false;
+      }
+    }
+  }
+};
+
+const editarPagoMembresia = (pago: PagoMembresia) => {
+  pagoEditando.value = pago;
+  formPagoEdit.value = {
+    fecha_pago: pago.fecha_pago.includes('T') ? pago.fecha_pago.split('T')[0] : pago.fecha_pago,
+    monto: pago.monto,
+    mes_pagado: pago.mes_pagado,
+    metodo_pago: pago.metodo_pago || '',
+    notas: pago.notas || ''
+  };
+  showModalEditarPago.value = true;
+};
+
+const eliminarPagoMembresia = async (pago: PagoMembresia) => {
+  if (!isSuperadmin.value) {
+    Swal.fire('Error', 'Solo el superadmin puede eliminar pagos de membresías', 'error');
+    return;
+  }
+
+  const result = await Swal.fire({
+    title: '¿Eliminar pago?',
+    text: `¿Estás seguro de eliminar este pago de $${pago.monto.toFixed(2)}? Esta acción no se puede deshacer.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#dc3545'
+  });
+
+  if (result.isConfirmed) {
+    const { error } = await deletePagoMembresia(pago.id);
+    if (error) {
+      Swal.fire('Error', error.message, 'error');
+    } else {
+      Swal.fire('Éxito', 'Pago eliminado correctamente', 'success');
+      await loadVentas();
+      if (showDetalleMembresiaModal.value && pagoMembresiaDetalle.value?.id === pago.id) {
+        showDetalleMembresiaModal.value = false;
+      }
+    }
+  }
+};
+
+const cerrarModalEditarPago = () => {
+  showModalEditarPago.value = false;
+  pagoEditando.value = null;
+  formPagoEdit.value = {
+    fecha_pago: '',
+    monto: 0,
+    mes_pagado: '',
+    metodo_pago: '',
+    notas: ''
+  };
+  errorMessage.value = '';
+};
+
+const guardarPagoEditado = async () => {
+  if (!pagoEditando.value) return;
+
+  loading.value = true;
+  errorMessage.value = '';
+
+  try {
+    // Convertir fecha_pago a formato con hora si es necesario
+    let fechaPago = formPagoEdit.value.fecha_pago;
+    if (!fechaPago.includes('T')) {
+      fechaPago = getFechaHoraActualLocal();
+    }
+
+    const { error } = await updatePagoMembresia(pagoEditando.value.id, {
+      fecha_pago: fechaPago,
+      monto: formPagoEdit.value.monto,
+      mes_pagado: formPagoEdit.value.mes_pagado,
+      metodo_pago: formPagoEdit.value.metodo_pago || null,
+      notas: formPagoEdit.value.notas || null
+    });
+
+    if (error) {
+      errorMessage.value = error.message;
+      loading.value = false;
+      return;
+    }
+
+    Swal.fire('Éxito', 'Pago actualizado correctamente', 'success');
+    cerrarModalEditarPago();
+    await loadVentas();
+  } catch (error: any) {
+    errorMessage.value = error.message || 'Error al actualizar pago';
+  } finally {
+    loading.value = false;
+  }
+};
+
 </script>
 

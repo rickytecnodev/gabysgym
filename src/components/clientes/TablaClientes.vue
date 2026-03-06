@@ -40,7 +40,12 @@
                 <button @click="$emit('editar', cliente)" class="btn btn-sm btn-outline-primary me-1" title="Editar">
                   <i class="fa-solid fa-edit"></i>
                 </button>
-                <button @click="$emit('eliminar', cliente)" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                <button 
+                  v-if="isSuperadmin"
+                  @click="$emit('eliminar', cliente)" 
+                  class="btn btn-sm btn-outline-danger" 
+                  title="Eliminar"
+                >
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </td>
@@ -65,6 +70,7 @@
 
 <script setup lang="ts">
 import type { Cliente } from '@/types/gym';
+import { formatFecha } from '@/utils/dateFormatter';
 
 interface ClienteConMembresias extends Cliente {
   membresias_activas?: number;
@@ -83,7 +89,4 @@ defineEmits<{
   'eliminar': [cliente: Cliente];
 }>();
 
-const formatFecha = (fecha: string) => {
-  return new Date(fecha).toLocaleDateString('es-MX');
-};
 </script>

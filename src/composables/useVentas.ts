@@ -23,13 +23,14 @@ export function useVentas() {
   const loadVentas = async (
     sucursalId: number | null,
     fechaDesde?: string,
-    fechaHasta?: string
+    fechaHasta?: string,
+    empleadoId?: number | null
   ) => {
     loadingData.value = true;
     try {
       const { data, error } = await fetchVentas(
         sucursalId,
-        undefined,
+        empleadoId,
         fechaDesde,
         fechaHasta
       );
@@ -46,12 +47,13 @@ export function useVentas() {
   const loadPagosMembresia = async (
     sucursalId: number | null,
     fechaDesde?: string,
-    fechaHasta?: string
+    fechaHasta?: string,
+    empleadoId?: number | null
   ) => {
     try {
       const { data, error } = await fetchPagosMembresiaConFiltros(
         sucursalId,
-        undefined,
+        empleadoId,
         fechaDesde,
         fechaHasta
       );

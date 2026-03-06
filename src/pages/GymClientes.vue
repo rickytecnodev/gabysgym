@@ -79,7 +79,11 @@
                 <i class="fa-solid fa-edit me-1"></i>
                 Editar Cliente
               </button>
-              <button @click="eliminarCliente(clienteDetalle!)" class="btn btn-sm btn-outline-danger me-1">
+              <button 
+                v-if="isSuperadmin"
+                @click="eliminarCliente(clienteDetalle!)" 
+                class="btn btn-sm btn-outline-danger me-1"
+              >
                 <i class="fa-solid fa-trash me-1"></i>
                 Eliminar Cliente
               </button>
@@ -144,6 +148,8 @@ import type { Cliente, ClienteForm } from '@/types/gym';
 import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosClientes from '@/components/clientes/FiltrosClientes.vue';
 import TablaClientes from '@/components/clientes/TablaClientes.vue';
+import { formatFecha } from '@/utils/dateFormatter';
+import Swal from 'sweetalert2';
 
 const { currentSucursalId, isSuperadmin } = useAuth();
 const {
@@ -283,6 +289,11 @@ const guardarCliente = async () => {
 };
 
 const eliminarCliente = async (cliente: Cliente) => {
+  if (!isSuperadmin.value) {
+    Swal.fire('Error', 'Solo el superadmin puede eliminar clientes', 'error');
+    return;
+  }
+  
   const result = await eliminarClienteFromComposable(cliente);
   if (result?.success) {
     if (showDetalleModal.value && clienteDetalle.value?.id === cliente.id) {
@@ -292,9 +303,5 @@ const eliminarCliente = async (cliente: Cliente) => {
   }
 };
 
-const formatFecha = (fecha: string) => {
-  return new Date(fecha).toLocaleDateString('es-MX');
-};
-
-// El componente TablaClientes ya tiene formatFecha, pero lo mantenemos aquí para el modal de detalle
+// formatFecha ahora viene de @/utils/dateFormatter
 </script>

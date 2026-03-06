@@ -36,7 +36,11 @@
                 <button @click="$emit('editar', producto)" class="btn btn-sm btn-outline-primary me-1">
                   <i class="fa-solid fa-edit"></i>
                 </button>
-                <button @click="$emit('eliminar', producto.id)" class="btn btn-sm btn-outline-danger">
+                <button 
+                  v-if="isSuperadmin"
+                  @click="$emit('eliminar', producto.id)" 
+                  class="btn btn-sm btn-outline-danger"
+                >
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </td>

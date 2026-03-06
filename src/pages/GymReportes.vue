@@ -134,6 +134,7 @@ import { useAuth } from '@/composables/useAuth';
 import { useReportes } from '@/composables/useReportes';
 import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosReportes from '@/components/reportes/FiltrosReportes.vue';
+import { formatFecha } from '@/utils/dateFormatter';
 
 const { currentSucursalId, isSuperadmin } = useAuth();
 const {
@@ -306,8 +307,5 @@ const limpiarPeriodo = () => {
 
 // Las funciones cargarEmpleados y cargarReportes ahora vienen del composable
 
-const formatFecha = (fecha: string) => {
-  return new Date(fecha).toLocaleDateString('es-MX');
-};
 </script>
 

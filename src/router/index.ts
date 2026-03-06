@@ -6,6 +6,7 @@ import GymVentas from '@/pages/GymVentas.vue';
 import GymMembresias from '@/pages/GymMembresias.vue';
 import GymClientes from '@/pages/GymClientes.vue';
 import GymReportes from '@/pages/GymReportes.vue';
+import GymUsuarios from '@/pages/GymUsuarios.vue';
 import { useAuth } from '@/composables/useAuth';
 
 const routes: RouteRecordRaw[] = [
@@ -54,6 +55,12 @@ const routes: RouteRecordRaw[] = [
     name: 'GymReportes',
     component: GymReportes,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/gym/usuarios',
+    name: 'GymUsuarios',
+    component: GymUsuarios,
+    meta: { requiresAuth: true, requiresSuperadmin: true }
   },
   {
     path: '/gym',

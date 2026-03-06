@@ -9,6 +9,7 @@
           <th>Estado</th>
           <th>Empleado</th>
           <th v-if="isSuperadmin && !filtroSucursal">Sucursal</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -30,9 +31,22 @@
           <td v-if="isSuperadmin && !filtroSucursal">
             {{ (venta.sucursal as any)?.nombre || 'N/A' }}
           </td>
+          <td @click.stop>
+            <button @click="$emit('editar', venta)" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+              <i class="fa-solid fa-edit"></i>
+            </button>
+            <button 
+              v-if="isSuperadmin"
+              @click="$emit('eliminar', venta)" 
+              class="btn btn-sm btn-outline-danger" 
+              title="Eliminar"
+            >
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
         </tr>
         <tr v-if="loading">
-          <td :colspan="isSuperadmin && !filtroSucursal ? 6 : 5" class="text-center py-4">
+          <td :colspan="isSuperadmin && !filtroSucursal ? 7 : 6" class="text-center py-4">
             <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
               <span class="visually-hidden">Cargando...</span>
             </div>
@@ -40,7 +54,7 @@
           </td>
         </tr>
         <tr v-else-if="ventas.length === 0">
-          <td :colspan="isSuperadmin && !filtroSucursal ? 6 : 5" class="text-center text-muted">No hay ventas de productos</td>
+          <td :colspan="isSuperadmin && !filtroSucursal ? 7 : 6" class="text-center text-muted">No hay ventas de productos</td>
         </tr>
       </tbody>
     </table>
@@ -49,6 +63,7 @@
 
 <script setup lang="ts">
 import type { Venta } from '@/types/gym';
+import { formatFecha } from '@/utils/dateFormatter';
 
 defineProps<{
   ventas: Venta[];
@@ -59,11 +74,10 @@ defineProps<{
 
 defineEmits<{
   'ver-detalle': [venta: Venta];
+  'editar': [venta: Venta];
+  'eliminar': [venta: Venta];
 }>();
 
-const formatFecha = (fecha: string) => {
-  return new Date(fecha).toLocaleDateString('es-MX');
-};
 
 const getEstadoBadgeClass = (estado: string) => {
   const clases: Record<string, string> = {

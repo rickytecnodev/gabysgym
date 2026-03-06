@@ -124,9 +124,7 @@ export function useMembresias() {
   ) => {
     loading.value = true;
     try {
-      const tipoMembresiaId = formData.tipo_membresia_id === -1 
-        ? (tiposMembresia.value.length > 0 ? tiposMembresia.value[0].id : null)
-        : formData.tipo_membresia_id;
+      const tipoMembresiaId = formData.tipo_membresia_id;
 
       if (!tipoMembresiaId) {
         return { error: 'Error: no hay tipos de membresía disponibles' };

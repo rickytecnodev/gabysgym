@@ -70,6 +70,17 @@
               Clientes
             </router-link>
           </li>
+          <li class="nav-item" v-if="isSuperadmin">
+            <router-link 
+              to="/gym/usuarios" 
+              class="nav-link px-3" 
+              active-class="active"
+              @click="closeMenu"
+            >
+              <i class="fa-solid fa-user-gear me-2"></i>
+              Usuarios
+            </router-link>
+          </li>
           <li class="nav-item">
             <router-link 
               to="/gym/reportes" 

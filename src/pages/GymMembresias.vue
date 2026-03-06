@@ -53,6 +53,15 @@
             </div>
             <div class="modal-body">
               <form @submit.prevent="guardarMembresia">
+                <div class="mb-3" v-if="isSuperadmin">
+                  <label class="form-label">Sucursal *</label>
+                  <select v-model.number="sucursalSeleccionada" class="form-select" required>
+                    <option value="">Selecciona una sucursal</option>
+                    <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
+                      {{ sucursal.nombre }}
+                    </option>
+                  </select>
+                </div>
                 <div class="mb-3">
                   <label class="form-label">Cliente *</label>
                   <select v-model="formMembresia.cliente_id" class="form-select" required>
@@ -70,7 +79,6 @@
                     <option v-for="tipo in tiposMembresia" :key="tipo.id" :value="tipo.id">
                       {{ tipo.nombre }} - ${{ tipo.precio_mensual.toFixed(2) }}/mes
                     </option>
-                    <option :value="-1">Personalizada (promo/precio especial)</option>
                   </select>
                 </div>
 
@@ -79,23 +87,19 @@
                   <input v-model="formMembresia.fecha_inicio" type="date" class="form-control" required>
                 </div>
 
-                <div class="mb-3" v-if="membresiaPersonalizada || formMembresia.tipo_membresia_id === -1">
+                <div class="mb-3">
                   <label class="form-label">Fecha de Vencimiento *</label>
-                  <input v-model="formMembresia.fecha_vencimiento" type="date" class="form-control" required>
-                </div>
-                <div v-else class="mb-3">
-                  <label class="form-label">Fecha de Vencimiento</label>
                   <input 
-                    :value="fechaVencimientoCalculada" 
+                    v-model="formMembresia.fecha_vencimiento" 
                     type="date" 
                     class="form-control" 
-                    disabled
-                    :title="'Calculada automáticamente basada en el tipo de membresía'"
+                    required
                   >
+                  <small class="text-muted">Se calcula automáticamente según el tipo, pero puedes editarla</small>
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label">Precio Mensual *</label>
+                  <label class="form-label">Precio *</label>
                   <input v-model.number="formMembresia.precio_mensual" type="number" step="0.01" class="form-control" required>
                 </div>
 
@@ -155,7 +159,7 @@
                     <tbody>
                       <tr v-for="pago in pagosMembresia" :key="pago.id">
                         <td>{{ formatFecha(pago.fecha_pago) }}</td>
-                        <td>{{ pago.mes_pagado }}</td>
+                        <td>{{ formatMesPagado(pago.mes_pagado) }}</td>
                         <td>${{ pago.monto.toFixed(2) }}</td>
                         <td>{{ pago.metodo_pago || 'N/A' }}</td>
                       </tr>
@@ -224,6 +228,7 @@
                       Editar Cliente
                     </button>
                     <button 
+                      v-if="isSuperadmin"
                       @click="eliminarMembresia(membresiaDetalle!)" 
                       class="btn btn-sm btn-outline-danger"
                       title="Eliminar membresía"
@@ -280,7 +285,13 @@
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Mes Pagado *</label>
-                  <input v-model="formPago.mes_pagado" type="month" class="form-control" required>
+                  <input 
+                    v-model="formPago.mes_pagado" 
+                    type="month" 
+                    class="form-control" 
+                    required
+                  >
+                  <small class="text-muted">Formato: YYYY-MM (ej: 2026-07)</small>
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Monto *</label>
@@ -433,6 +444,7 @@ import { useMembresias } from '@/composables/useMembresias';
 import { supabase } from '@/utils/supabase';
 import type { Membresia, Cliente, MembresiaForm } from '@/types/gym';
 import Swal from 'sweetalert2';
+import { formatFecha, formatMesPagado, getFechaActualLocal, getFechaHoraActualLocal } from '@/utils/dateFormatter';
 import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosMembresias from '@/components/membresias/FiltrosMembresias.vue';
 import TablaMembresias from '@/components/membresias/TablaMembresias.vue';
@@ -482,12 +494,12 @@ const filtroFechaHasta = ref('');
 const filtroSucursal = ref<number | null>(null);
 const periodoActivo = ref<string>('');
 const filtroClienteId = ref<number | null>(null);
+const sucursalSeleccionada = ref<number | null>(null);
 
-const membresiaPersonalizada = ref(false);
 const formMembresia = ref<MembresiaForm & { fecha_vencimiento?: string }>({
   cliente_id: 0,
   tipo_membresia_id: 0,
-  fecha_inicio: new Date().toISOString().split('T')[0],
+  fecha_inicio: getFechaActualLocal(),
   precio_mensual: 0,
   fecha_vencimiento: ''
 });
@@ -502,7 +514,7 @@ const formCliente = ref({
 
 const formPago = ref({
   membresia_id: 0,
-  fecha_pago: new Date().toISOString().split('T')[0],
+  fecha_pago: getFechaActualLocal(),
   mes_pagado: new Date().toISOString().slice(0, 7),
   monto: 0,
   metodo_pago: '',
@@ -585,12 +597,7 @@ watch(filtroSucursal, () => {
 
 // Watchers para calcular fecha de vencimiento automáticamente
 watch([() => formMembresia.value.fecha_inicio, () => formMembresia.value.tipo_membresia_id], () => {
-  // Si es personalizada (tipo_membresia_id === -1), no calcular automáticamente
-  if (formMembresia.value.tipo_membresia_id === -1) {
-    membresiaPersonalizada.value = true;
-    return;
-  }
-  if (!membresiaPersonalizada.value && formMembresia.value.fecha_inicio && formMembresia.value.tipo_membresia_id && formMembresia.value.tipo_membresia_id > 0) {
+  if (formMembresia.value.fecha_inicio && formMembresia.value.tipo_membresia_id && formMembresia.value.tipo_membresia_id > 0) {
     calcularPrecio();
   }
 });
@@ -722,14 +729,7 @@ const loadMembresias = async () => {
 };
 
 const onTipoMembresiaChange = () => {
-  // Si se selecciona "Personalizada" (valor -1)
-  if (formMembresia.value.tipo_membresia_id === -1) {
-    membresiaPersonalizada.value = true;
-    // No resetear tipo_membresia_id aquí, mantenerlo como -1 para que el select muestre "Personalizada"
-    formMembresia.value.precio_mensual = 0;
-    formMembresia.value.fecha_vencimiento = '';
-  } else if (formMembresia.value.tipo_membresia_id > 0) {
-    membresiaPersonalizada.value = false;
+  if (formMembresia.value.tipo_membresia_id > 0) {
     calcularPrecio();
   }
 };
@@ -738,8 +738,8 @@ const calcularPrecio = () => {
   const tipo = tiposMembresia.value.find(t => t.id === formMembresia.value.tipo_membresia_id);
   if (tipo) {
     formMembresia.value.precio_mensual = tipo.precio_mensual;
-    // Si no es personalizada, calcular la fecha de vencimiento
-    if (!membresiaPersonalizada.value && formMembresia.value.fecha_inicio) {
+    // Calcular la fecha de vencimiento automáticamente, pero el usuario puede editarla
+    if (formMembresia.value.fecha_inicio) {
       const fechaInicio = new Date(formMembresia.value.fecha_inicio);
       const fechaVencimiento = new Date(fechaInicio);
       fechaVencimiento.setDate(fechaVencimiento.getDate() + tipo.duracion_dias);
@@ -748,21 +748,6 @@ const calcularPrecio = () => {
   }
 };
 
-const fechaVencimientoCalculada = computed(() => {
-  if (membresiaPersonalizada.value || !formMembresia.value.tipo_membresia_id || !formMembresia.value.fecha_inicio) {
-    return '';
-  }
-  
-  const tipo = tiposMembresia.value.find(t => t.id === formMembresia.value.tipo_membresia_id);
-  if (!tipo) return '';
-  
-  const fechaInicio = new Date(formMembresia.value.fecha_inicio);
-  const fechaVencimiento = new Date(fechaInicio);
-  fechaVencimiento.setDate(fechaVencimiento.getDate() + tipo.duracion_dias);
-  return fechaVencimiento.toISOString().split('T')[0];
-});
-
-
 const actualizarEstados = async (mostrarMensaje = true) => {
   await actualizarEstadosFromComposable(mostrarMensaje);
   await loadMembresias();
@@ -770,11 +755,11 @@ const actualizarEstados = async (mostrarMensaje = true) => {
 
 const cerrarModal = () => {
   showModal.value = false;
-  membresiaPersonalizada.value = false;
+  sucursalSeleccionada.value = null;
   formMembresia.value = {
     cliente_id: 0,
     tipo_membresia_id: 0,
-    fecha_inicio: new Date().toISOString().split('T')[0],
+    fecha_inicio: getFechaActualLocal(),
     precio_mensual: 0,
     fecha_vencimiento: '' as string
   };
@@ -782,20 +767,26 @@ const cerrarModal = () => {
 };
 
 const guardarMembresia = async () => {
-  if (!currentSucursalId.value) {
-    errorMessage.value = 'Debes estar asignado a una sucursal';
+  // Determinar la sucursal a usar
+  const sucursalId = isSuperadmin.value 
+    ? sucursalSeleccionada.value 
+    : currentSucursalId.value;
+  
+  if (!sucursalId) {
+    errorMessage.value = isSuperadmin.value 
+      ? 'Debes seleccionar una sucursal' 
+      : 'Debes estar asignado a una sucursal';
     return;
   }
 
-  // Validar que si es personalizada, tenga fecha de vencimiento
-  if (membresiaPersonalizada.value && !formMembresia.value.fecha_vencimiento) {
-    errorMessage.value = 'Debes ingresar la fecha de vencimiento para membresías personalizadas';
-    return;
-  }
-
-  // Validar que si no es personalizada, tenga tipo de membresía
-  if (!membresiaPersonalizada.value && !formMembresia.value.tipo_membresia_id) {
+  // Validar que tenga tipo de membresía y fecha de vencimiento
+  if (!formMembresia.value.tipo_membresia_id) {
     errorMessage.value = 'Debes seleccionar un tipo de membresía';
+    return;
+  }
+  
+  if (!formMembresia.value.fecha_vencimiento) {
+    errorMessage.value = 'Debes ingresar la fecha de vencimiento';
     return;
   }
 
@@ -803,21 +794,17 @@ const guardarMembresia = async () => {
   errorMessage.value = '';
 
   try {
-    // Si no es personalizada, usar la fecha calculada
-    const fechaVencimiento = membresiaPersonalizada.value 
-      ? formMembresia.value.fecha_vencimiento 
-      : fechaVencimientoCalculada.value;
+    // Usar la fecha de vencimiento del formulario (siempre editable)
+    const fechaVencimiento = formMembresia.value.fecha_vencimiento;
 
     if (!fechaVencimiento) {
-      errorMessage.value = 'Error al calcular la fecha de vencimiento';
+      errorMessage.value = 'Debes ingresar la fecha de vencimiento';
       loading.value = false;
       return;
     }
 
-    // Para membresías personalizadas, usar el primer tipo disponible o null
-    const tipoMembresiaId = membresiaPersonalizada.value 
-      ? (tiposMembresia.value.length > 0 ? tiposMembresia.value[0].id : null)
-      : formMembresia.value.tipo_membresia_id;
+    // Usar el tipo de membresía seleccionado
+    const tipoMembresiaId = formMembresia.value.tipo_membresia_id;
 
     if (!tipoMembresiaId) {
       errorMessage.value = 'Error: no hay tipos de membresía disponibles';
@@ -825,18 +812,40 @@ const guardarMembresia = async () => {
       return;
     }
 
-    const { error } = await createMembresia({
+    const { data: membresiaCreada, error } = await createMembresia({
       cliente_id: formMembresia.value.cliente_id,
       tipo_membresia_id: tipoMembresiaId,
       fecha_inicio: formMembresia.value.fecha_inicio,
       precio_mensual: formMembresia.value.precio_mensual,
       fecha_vencimiento: fechaVencimiento,
-      sucursal_id: currentSucursalId.value
+      sucursal_id: sucursalId
     });
 
     if (error) {
       errorMessage.value = error.message;
       return;
+    }
+
+    // Crear el pago inicial automáticamente
+    if (membresiaCreada && currentUser.value) {
+      const fechaInicio = new Date(formMembresia.value.fecha_inicio);
+      const mesPagado = `${fechaInicio.getFullYear()}-${String(fechaInicio.getMonth() + 1).padStart(2, '0')}`;
+      
+      const { error: pagoError } = await createPagoMembresia({
+        membresia_id: membresiaCreada.id,
+        fecha_pago: getFechaHoraActualLocal(),
+        monto: formMembresia.value.precio_mensual,
+        mes_pagado: mesPagado,
+        metodo_pago: 'efectivo',
+        notas: 'Pago inicial de membresía',
+        empleado_id: currentUser.value.id
+      });
+
+      if (pagoError) {
+        console.error('Error al crear pago inicial:', pagoError);
+        // No fallar la creación de la membresía si falla el pago, solo mostrar advertencia
+        Swal.fire('Advertencia', 'Membresía creada pero no se pudo registrar el pago inicial', 'warning');
+      }
     }
 
     Swal.fire('Éxito', 'Membresía creada correctamente', 'success');
@@ -1006,35 +1015,6 @@ const guardarFechas = async () => {
   }
 };
 
-const formatFecha = (fecha: string) => {
-  // Extraer la fecha directamente del string para evitar problemas de zona horaria
-  let fechaStr = '';
-  if (typeof fecha === 'string') {
-    if (fecha.includes('T')) {
-      fechaStr = fecha.split('T')[0];
-    } else if (fecha.includes(' ')) {
-      fechaStr = fecha.split(' ')[0];
-    } else {
-      fechaStr = fecha;
-    }
-  } else {
-    // Si no es string, convertir a Date y usar métodos locales
-    const fechaObj = new Date(fecha);
-    const año = fechaObj.getFullYear();
-    const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
-    const dia = String(fechaObj.getDate()).padStart(2, '0');
-    fechaStr = `${año}-${mes}-${dia}`;
-  }
-  
-  // Convertir YYYY-MM-DD a formato local (DD/MM/YYYY)
-  const partes = fechaStr.split('-');
-  if (partes.length === 3) {
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
-  }
-  
-  // Fallback: usar toLocaleDateString si no se pudo parsear
-  return new Date(fecha).toLocaleDateString('es-MX');
-};
 
 const getEstadoBadgeClass = (estado: string) => {
   const clases: Record<string, string> = {
@@ -1099,6 +1079,11 @@ const guardarCliente = async () => {
 };
 
 const eliminarMembresia = async (membresia: Membresia) => {
+  if (!isSuperadmin.value) {
+    Swal.fire('Error', 'Solo el superadmin puede eliminar membresías', 'error');
+    return;
+  }
+  
   const result = await eliminarMembresiaFromComposable(membresia);
   if (result?.success) {
     await loadMembresias();
@@ -1115,7 +1100,7 @@ const registrarPago = (membresia: Membresia) => {
   const hoy = new Date();
   formPago.value = {
     membresia_id: membresia.id,
-    fecha_pago: hoy.toISOString().split('T')[0],
+    fecha_pago: getFechaActualLocal(),
     mes_pagado: hoy.toISOString().slice(0, 7),
     monto: membresia.precio_mensual || 0,
     metodo_pago: '',
@@ -1131,7 +1116,7 @@ const cerrarPagoModal = () => {
   membresiaPago.value = null;
   formPago.value = {
     membresia_id: 0,
-    fecha_pago: new Date().toISOString().split('T')[0],
+    fecha_pago: getFechaActualLocal(),
     mes_pagado: new Date().toISOString().slice(0, 7),
     monto: 0,
     metodo_pago: '',
