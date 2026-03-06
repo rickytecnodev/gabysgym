@@ -13,6 +13,20 @@ import "@/style.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 
+// Registrar Service Worker para PWA
+import { registerSW } from 'virtual:pwa-register';
+
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    // Opcional: mostrar notificación cuando hay actualizaciones disponibles
+    console.log('Nueva versión disponible');
+  },
+  onOfflineReady() {
+    console.log('App lista para funcionar offline');
+  },
+});
+
 const app = createApp(App);
 const pinia = createPinia();
 
