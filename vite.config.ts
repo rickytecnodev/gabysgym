@@ -3,39 +3,43 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
-export default defineConfig({
-  base: '/gabysgym/',
-  plugins: [
-    vue(),
-    VitePWA({
-      registerType: 'prompt',
-      includeAssets: ['img/logo.png'],
-      manifest: {
-        name: 'System Gym',
-        short_name: 'System Gym',
-        description: 'System Gym - Sistema de gestión para gimnasios',
-        theme_color: '#224a9d',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait',
-        lang: 'es',
-        start_url: '/gabysgym/',
-        scope: '/gabysgym/',
-        icons: [
-          { 
-            src: '/gabysgym/img/logo.png', 
-            sizes: '192x192', 
-            type: 'image/png', 
-            purpose: 'any' 
-          },
-          { 
-            src: '/gabysgym/img/logo.png', 
-            sizes: '512x512', 
-            type: 'image/png', 
-            purpose: 'any maskable' 
-          },
-        ],
-      },
+export default defineConfig(({ mode }) => {
+  const isProduction = mode === 'production'
+  const base = isProduction ? '/gabysgym/' : '/'
+  
+  return {
+    base,
+    plugins: [
+      vue(),
+      VitePWA({
+        registerType: 'prompt',
+        includeAssets: ['img/logo.png'],
+        manifest: {
+          name: 'System Gym',
+          short_name: 'System Gym',
+          description: 'System Gym - Sistema de gestión para gimnasios',
+          theme_color: '#224a9d',
+          background_color: '#ffffff',
+          display: 'standalone',
+          orientation: 'portrait',
+          lang: 'es',
+          start_url: isProduction ? '/gabysgym/' : '/',
+          scope: isProduction ? '/gabysgym/' : '/',
+          icons: [
+            { 
+              src: isProduction ? '/gabysgym/img/logo.png' : '/img/logo.png', 
+              sizes: '192x192', 
+              type: 'image/png', 
+              purpose: 'any' 
+            },
+            { 
+              src: isProduction ? '/gabysgym/img/logo.png' : '/img/logo.png', 
+              sizes: '512x512', 
+              type: 'image/png', 
+              purpose: 'any maskable' 
+            },
+          ],
+        },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
@@ -50,34 +54,35 @@ export default defineConfig({
           },
         ],
       },
-      devOptions: {
-        enabled: false,
-        type: 'module',
-      },
-    }),
-    viteWrapCodeInIIFE({ files: ['gymapp.js'] }),
-  ],
-  server: {
-    port: 5173,
-    host: true, // Permite acceso desde la red local
-    open: true, // Abre el navegador automáticamente
-  },
-  build: {
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        format: 'es', // Use ES Modules format
-        entryFileNames: `gymapp.js`,
-        chunkFileNames: `gymapp-[hash].js`,
-        assetFileNames: `gymapp.[ext]`,
+        devOptions: {
+          enabled: false,
+          type: 'module',
+        },
+      }),
+      viteWrapCodeInIIFE({ files: ['gymapp.js'] }),
+    ],
+    server: {
+      port: 5173,
+      host: true, // Permite acceso desde la red local
+      open: true, // Abre el navegador automáticamente
+    },
+    build: {
+      sourcemap: true,
+      rollupOptions: {
+        output: {
+          format: 'es', // Use ES Modules format
+          entryFileNames: `gymapp.js`,
+          chunkFileNames: `gymapp-[hash].js`,
+          assetFileNames: `gymapp.[ext]`,
+        },
       },
     },
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
     },
-  },
+  }
 })
 
 interface ViteWrapCodeInIIFEOptions {
