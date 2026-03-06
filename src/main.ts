@@ -16,7 +16,7 @@ import "primeflex/primeflex.css";
 // Registrar Service Worker para PWA
 import { registerSW } from 'virtual:pwa-register';
 
-const updateSW = registerSW({
+registerSW({
   immediate: true,
   onNeedRefresh() {
     // Opcional: mostrar notificación cuando hay actualizaciones disponibles
