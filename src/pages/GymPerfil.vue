@@ -1,6 +1,5 @@
 <template>
   <div class="bg-light min-vh-100">
-    <GymNavbar />
     <div class="container py-4">
       <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-6 col-xl-5">
@@ -68,7 +67,6 @@ import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { updateEmpleado } from '@/services/gymApi';
 import Swal from 'sweetalert2';
-import GymNavbar from '@/components/GymNavbar.vue';
 
 const router = useRouter();
 const { currentUser, refreshUser } = useAuth();

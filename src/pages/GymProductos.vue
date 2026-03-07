@@ -1,6 +1,5 @@
 <template>
   <div class="bg-light min-vh-100">
-    <GymNavbar />
     <div class="container-fluid py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Productos</h1>
@@ -215,7 +214,6 @@ import {
   deleteTipoMembresia 
 } from '@/services/gymApi';
 import type { Producto, ProductoForm, TipoMembresia } from '@/types/gym';
-import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosProductos from '@/components/productos/FiltrosProductos.vue';
 import TablaProductos from '@/components/productos/TablaProductos.vue';
 import TablaProductosMobile from '@/components/productos/TablaProductosMobile.vue';

@@ -1,6 +1,5 @@
 <template>
   <div class="bg-light min-vh-100">
-    <GymNavbar />
     <div class="container-fluid py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Clientes</h1>
@@ -159,7 +158,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useClientes } from '@/composables/useClientes';
 import type { Cliente, ClienteForm } from '@/types/gym';
-import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosClientes from '@/components/clientes/FiltrosClientes.vue';
 import TablaClientes from '@/components/clientes/TablaClientes.vue';
 import TablaClientesMobile from '@/components/clientes/TablaClientesMobile.vue';

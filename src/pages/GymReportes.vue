@@ -1,6 +1,5 @@
 <template>
   <div class="bg-light min-vh-100">
-    <GymNavbar />
     <div class="container-fluid py-4">
       <h1 class="h3 mb-4">Reportes</h1>
 
@@ -57,7 +56,6 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useReportes } from '@/composables/useReportes';
-import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosReportes from '@/components/reportes/FiltrosReportes.vue';
 import TablaReporteVentas from '@/components/reportes/TablaReporteVentas.vue';
 import TablaReporteVentasMobile from '@/components/reportes/TablaReporteVentasMobile.vue';

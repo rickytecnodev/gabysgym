@@ -84,7 +84,13 @@ const routes: RouteRecordRaw[] = [
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes
+  routes,
+  scrollBehavior(_to, _from, savedPosition) {
+    // Si el usuario usó "atrás" y hay posición guardada, restaurarla (opcional)
+    if (savedPosition) return savedPosition;
+    // Siempre ir al inicio al cambiar de ruta
+    return { top: 0 };
+  }
 });
 
 // Guard de navegación para proteger rutas

@@ -26,6 +26,13 @@ html:has(.login-page) {
   min-height: 100vh;
 }
 
+/* Espacio para la barra de atajos móvil (solo en pantallas pequeñas) */
+@media (max-width: 767.98px) {
+  body:has(.gym-btn-down) .main-content {
+    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* Estilos para las tarjetas con hover */
 .card {
   transition: transform 0.25s ease, box-shadow 0.25s ease;

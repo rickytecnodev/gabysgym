@@ -1,6 +1,5 @@
 <template>
   <div class="bg-light min-vh-100">
-    <GymNavbar />
     <div class="container-fluid py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Usuarios</h1>
@@ -99,7 +98,6 @@
 import { ref, onMounted } from 'vue';
 import { fetchEmpleados, createEmpleado, updateEmpleado, deleteEmpleado, fetchSucursales } from '@/services/gymApi';
 import type { Empleado, Sucursal } from '@/types/gym';
-import GymNavbar from '@/components/GymNavbar.vue';
 import TablaUsuarios from '@/components/usuarios/TablaUsuarios.vue';
 import TablaUsuariosMobile from '@/components/usuarios/TablaUsuariosMobile.vue';
 import Swal from 'sweetalert2';

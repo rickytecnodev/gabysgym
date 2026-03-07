@@ -1,6 +1,5 @@
 <template>
   <div class="bg-light min-vh-100">
-    <GymNavbar />
     <div class="container-fluid py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Membresías</h1>
@@ -465,7 +464,6 @@ import { supabase } from '@/utils/supabase';
 import type { Membresia, Cliente, MembresiaForm } from '@/types/gym';
 import Swal from 'sweetalert2';
 import { formatFecha, formatMesPagado, getFechaActualLocal, getFechaHoraActualLocal } from '@/utils/dateFormatter';
-import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosMembresias from '@/components/membresias/FiltrosMembresias.vue';
 import TablaMembresias from '@/components/membresias/TablaMembresias.vue';
 import TablaMembresiasMobile from '@/components/membresias/TablaMembresiasMobile.vue';

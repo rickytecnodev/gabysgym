@@ -1,6 +1,5 @@
 <template>
   <div class="bg-light min-vh-100">
-    <GymNavbar />
     <div v-if="loading" class="container-fluid py-4">
       <div class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
@@ -17,8 +16,8 @@
         <p class="mb-0">Por favor, verifica tu conexión y las variables de entorno.</p>
       </div>
     </div>
-    <div v-else class="container-fluid py-4">
-      <div class="mb-4">
+    <div v-else class="container-fluid py-2">
+      <div class="mb-2">
         <h1 class="h3 mb-0">Inicio</h1>
       </div>
 
@@ -28,11 +27,7 @@
           <div class="row align-items-end">
             <div class="col-md-4">
               <label class="form-label fw-bold">Filtrar por Sucursal:</label>
-              <select 
-                v-model="sucursalSeleccionada" 
-                @change="loadStats" 
-                class="form-select"
-              >
+              <select v-model="sucursalSeleccionada" @change="loadStats" class="form-select">
                 <option :value="null">Todas</option>
                 <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
                   {{ sucursal.nombre }}
@@ -46,11 +41,9 @@
       <!-- Estadísticas rápidas -->
       <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-          <div 
-            @click="stats.ventasHoy > 0 ? navegarAVentas('hoy') : null" 
-            :class="['card border-0 shadow-sm h-100', stats.ventasHoy > 0 ? 'hover-card' : 'opacity-50']" 
-            :style="stats.ventasHoy > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'"
-          >
+          <div @click="stats.ventasHoy > 0 ? navegarAVentas('hoy') : null"
+            :class="['card border-0 shadow-sm h-100', stats.ventasHoy > 0 ? 'hover-card' : 'opacity-50']"
+            :style="stats.ventasHoy > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -65,11 +58,9 @@
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div 
-            @click="stats.ventasPendientes > 0 ? navegarAVentas('hoy', 'pendiente') : null" 
-            :class="['card border-0 shadow-sm h-100', stats.ventasPendientes > 0 ? 'hover-card' : 'opacity-50']" 
-            :style="stats.ventasPendientes > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'"
-          >
+          <div @click="stats.ventasPendientes > 0 ? navegarAVentas('hoy', 'pendiente') : null"
+            :class="['card border-0 shadow-sm h-100', stats.ventasPendientes > 0 ? 'hover-card' : 'opacity-50']"
+            :style="stats.ventasPendientes > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -84,11 +75,9 @@
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div 
-            @click="stats.membresiasActivas > 0 ? navegarAMembresias({ estado: 'activa' }) : null" 
-            :class="['card border-0 shadow-sm h-100', stats.membresiasActivas > 0 ? 'hover-card' : 'opacity-50']" 
-            :style="stats.membresiasActivas > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'"
-          >
+          <div @click="stats.membresiasActivas > 0 ? navegarAMembresias({ estado: 'activa' }) : null"
+            :class="['card border-0 shadow-sm h-100', stats.membresiasActivas > 0 ? 'hover-card' : 'opacity-50']"
+            :style="stats.membresiasActivas > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -103,11 +92,9 @@
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div 
-            @click="stats.membresiasPorVencer > 0 ? navegarAMembresiasPorVencer() : null" 
-            :class="['card border-0 shadow-sm h-100', stats.membresiasPorVencer > 0 ? 'hover-card' : 'opacity-50']" 
-            :style="stats.membresiasPorVencer > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'"
-          >
+          <div @click="stats.membresiasPorVencer > 0 ? navegarAMembresiasPorVencer() : null"
+            :class="['card border-0 shadow-sm h-100', stats.membresiasPorVencer > 0 ? 'hover-card' : 'opacity-50']"
+            :style="stats.membresiasPorVencer > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -124,11 +111,9 @@
       </div>
       <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-          <div 
-            @click="stats.membresiasVencidas > 0 ? navegarAMembresias({ estado: 'vencida' }) : null" 
-            :class="['card border-0 shadow-sm h-100', stats.membresiasVencidas > 0 ? 'hover-card' : 'opacity-50']" 
-            :style="stats.membresiasVencidas > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'"
-          >
+          <div @click="stats.membresiasVencidas > 0 ? navegarAMembresias({ estado: 'vencida' }) : null"
+            :class="['card border-0 shadow-sm h-100', stats.membresiasVencidas > 0 ? 'hover-card' : 'opacity-50']"
+            :style="stats.membresiasVencidas > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -158,11 +143,9 @@
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div 
-            @click="stats.bitacorasHoy > 0 ? navegarABitacoras() : null" 
-            :class="['card border-0 shadow-sm h-100', stats.bitacorasHoy > 0 ? 'hover-card' : 'opacity-50']" 
-            :style="stats.bitacorasHoy > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'"
-          >
+          <div @click="stats.bitacorasHoy > 0 ? navegarABitacoras() : null"
+            :class="['card border-0 shadow-sm h-100', stats.bitacorasHoy > 0 ? 'hover-card' : 'opacity-50']"
+            :style="stats.bitacorasHoy > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -272,7 +255,6 @@ import { useBitacoras } from '@/composables/useBitacoras';
 import { fetchVentas, fetchMembresias, fetchPagosMembresiaConFiltros, fetchClientes, fetchSucursales } from '@/services/gymApi';
 import { getFechaActualLocal } from '@/utils/dateFormatter';
 import type { Sucursal } from '@/types/gym';
-import GymNavbar from '@/components/GymNavbar.vue';
 
 const router = useRouter();
 const { currentSucursalId, isSuperadmin, isAuthenticated, currentUser } = useAuth();
@@ -310,7 +292,7 @@ const navegarAMembresiasPorVencer = () => {
   hoy.setHours(0, 0, 0, 0);
   const en7Dias = new Date(hoy);
   en7Dias.setDate(en7Dias.getDate() + 7);
-  
+
   setFilters({
     fechaDesde: hoy.toISOString().split('T')[0],
     fechaHasta: en7Dias.toISOString().split('T')[0],
@@ -331,14 +313,14 @@ onMounted(async () => {
   try {
     loading.value = true;
     error.value = null;
-    
+
     // Verificar autenticación
     if (!isAuthenticated.value) {
       error.value = 'No estás autenticado. Por favor, inicia sesión.';
       loading.value = false;
       return;
     }
-    
+
     // Cargar sucursales si es superadmin
     if (isSuperadmin.value) {
       const { data } = await fetchSucursales();
@@ -346,7 +328,7 @@ onMounted(async () => {
         sucursales.value = data;
       }
     }
-    
+
     await loadStats();
     await loadBitacorasStats();
   } catch (err: any) {
@@ -361,14 +343,14 @@ const loadBitacorasStats = async () => {
   try {
     const hoy = getFechaActualLocal();
     // Determinar la sucursal a usar para filtrar
-    const sucursalId = isSuperadmin.value 
+    const sucursalId = isSuperadmin.value
       ? (sucursalSeleccionada.value || null)
       : currentSucursalId.value;
-    
+
     if (isSuperadmin.value) {
       // Superadmin: cargar todas las bitácoras y contar solo las que NO son de él y pertenecen a la sucursal seleccionada
       await loadBitacoras(null, hoy, hoy, sucursalId);
-      stats.value.bitacorasHoy = bitacorasData.value.filter(b => 
+      stats.value.bitacorasHoy = bitacorasData.value.filter(b =>
         b.fecha === hoy && b.empleado_id !== currentUser.value?.id
       ).length;
     } else {
@@ -387,16 +369,16 @@ const loadStats = async () => {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const hoyInicio = hoy.toISOString(); // Incluye hora: "2026-04-03T00:00:00.000Z"
-    
+
     const hoyFin = new Date(hoy);
     hoyFin.setHours(23, 59, 59, 999);
     const hoyFinStr = hoyFin.toISOString(); // Incluye hora: "2026-04-03T23:59:59.999Z"
-    
+
     // Determinar la sucursal a usar para filtrar
-    const sucursalId = isSuperadmin.value 
+    const sucursalId = isSuperadmin.value
       ? (sucursalSeleccionada.value || null)
       : currentSucursalId.value;
-    
+
     // Usar directamente fetchVentas y fetchPagosMembresiaConFiltros con el rango completo del día
     // para asegurar que se incluyan todas las ventas
     const { data: ventas, error: ventasError } = await fetchVentas(
@@ -405,14 +387,14 @@ const loadStats = async () => {
       hoyInicio,
       hoyFinStr
     );
-    
+
     const { data: pagosMembresia, error: pagosError } = await fetchPagosMembresiaConFiltros(
       sucursalId,
       undefined,
       hoyInicio,
       hoyFinStr
     );
-    
+
     if (ventasError || pagosError) {
       console.error('Error al cargar ventas:', ventasError || pagosError);
       stats.value.ventasHoy = 0;
@@ -432,7 +414,7 @@ const loadStats = async () => {
       undefined,
       undefined
     );
-    
+
     if (ventasPendientesError) {
       console.error('Error al cargar ventas pendientes:', ventasPendientesError);
     } else {
@@ -444,26 +426,26 @@ const loadStats = async () => {
     const { data: membresias, error: membresiasError } = await fetchMembresias(
       sucursalId
     );
-    
+
     if (membresiasError) {
       console.error('Error al cargar membresías:', membresiasError);
     } else if (membresias) {
       stats.value.membresiasActivas = membresias.filter(m => m.estado === 'activa').length;
       stats.value.membresiasVencidas = membresias.filter(m => m.estado === 'vencida').length;
-      
+
       // Calcular "por vencer" = membresías activas que vencen en los próximos 7 días (hasta el día 7, inclusive)
       // Si hoy es día 5, entonces "por vencer" es del día 5 al día 12 (7 días desde hoy)
       const hoyStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       const hoyDate = new Date(hoyStr + 'T00:00:00');
       const en7Dias = new Date(hoyDate);
       en7Dias.setDate(en7Dias.getDate() + 7); // Sumar 7 días
-      
+
       // Normalizar fecha de en7Dias a string YYYY-MM-DD para comparación
       const en7DiasStr = en7Dias.toISOString().split('T')[0];
-      
+
       stats.value.membresiasPorVencer = membresias.filter(m => {
         if (m.estado !== 'activa') return false;
-        
+
         // Normalizar fecha de vencimiento a YYYY-MM-DD (sin zona horaria)
         let fechaVencimientoStr = '';
         if (typeof m.fecha_vencimiento === 'string') {
@@ -481,9 +463,9 @@ const loadStats = async () => {
             fechaVencimientoStr = fecha.toISOString().split('T')[0];
           }
         }
-        
+
         if (!fechaVencimientoStr) return false;
-        
+
         // Comparar como strings: debe ser >= hoy y <= en7Dias
         // Si hoy es 2026-03-05 y en7Dias es 2026-03-12, entonces incluir del 05 al 12
         return fechaVencimientoStr >= hoyStr && fechaVencimientoStr <= en7DiasStr;
@@ -494,19 +476,19 @@ const loadStats = async () => {
     const { data: clientes, error: clientesError } = await fetchClientes(
       sucursalId
     );
-    
+
     if (clientesError) {
       console.error('Error al cargar clientes:', clientesError);
     } else if (clientes) {
       stats.value.clientes = clientes.length;
     }
-    } catch (error) {
-      console.error('Error en loadStats:', error);
-    }
-    
-    // Recargar bitácoras cuando cambian las estadísticas (por el filtro de sucursal)
-    await loadBitacorasStats();
-  };
+  } catch (error) {
+    console.error('Error en loadStats:', error);
+  }
+
+  // Recargar bitácoras cuando cambian las estadísticas (por el filtro de sucursal)
+  await loadBitacorasStats();
+};
 
 </script>
 
@@ -521,4 +503,3 @@ const loadStats = async () => {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
 </style>
-

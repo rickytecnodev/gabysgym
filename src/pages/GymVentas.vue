@@ -1,6 +1,5 @@
 <template>
   <div class="bg-light min-vh-100">
-    <GymNavbar />
     <div class="container-fluid py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Ventas</h1>
@@ -442,7 +441,6 @@ import { deleteVenta, updateVenta, updatePagoMembresia, deletePagoMembresia } fr
 import type { Venta, VentaForm, PagoMembresia } from '@/types/gym';
 import Swal from 'sweetalert2';
 import { getFechaHoraActualLocal, getFechaActualLocal } from '@/utils/dateFormatter';
-import GymNavbar from '@/components/GymNavbar.vue';
 import { formatFecha, formatMesPagado } from '@/utils/dateFormatter';
 import FiltrosVentas from '@/components/ventas/FiltrosVentas.vue';
 import TabsVentas from '@/components/ventas/TabsVentas.vue';

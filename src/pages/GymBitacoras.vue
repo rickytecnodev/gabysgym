@@ -1,6 +1,5 @@
 <template>
   <div class="bg-light min-vh-100">
-    <GymNavbar />
     <div class="container-fluid py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Bitácora del Día</h1>
@@ -97,7 +96,6 @@ import { useAuth } from '@/composables/useAuth';
 import { useBitacoras } from '@/composables/useBitacoras';
 import { getFechaActualLocal } from '@/utils/dateFormatter';
 import type { BitacoraDiaForm } from '@/types/gym';
-import GymNavbar from '@/components/GymNavbar.vue';
 import FiltrosBitacoras from '@/components/bitacoras/FiltrosBitacoras.vue';
 import TablaBitacoras from '@/components/bitacoras/TablaBitacoras.vue';
 import TablaBitacorasMobile from '@/components/bitacoras/TablaBitacorasMobile.vue';
