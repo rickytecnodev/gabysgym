@@ -873,12 +873,12 @@ export async function deletePagoMembresia(
 // ============================================
 
 export async function getReporteVentas(
-  fechaDesde: string,
-  fechaHasta: string,
+  fechaDesde?: string | null,
+  fechaHasta?: string | null,
   sucursalId?: number | null,
   empleadoId?: number | null
 ): Promise<{ data: ReporteVentas[] | null; error: { message: string } | null }> {
-  const { data: ventas, error } = await fetchVentas(sucursalId, empleadoId, fechaDesde, fechaHasta);
+  const { data: ventas, error } = await fetchVentas(sucursalId, empleadoId, fechaDesde ?? undefined, fechaHasta ?? undefined);
 
   if (error || !ventas) {
     return { data: null, error: error || { message: 'Error al obtener ventas' } };
@@ -888,8 +888,8 @@ export async function getReporteVentas(
   const { data: pagosMembresia } = await fetchPagosMembresiaConFiltros(
     sucursalId,
     empleadoId,
-    fechaDesde,
-    fechaHasta
+    fechaDesde ?? undefined,
+    fechaHasta ?? undefined
   );
 
   // Agrupar por fecha y sucursal (si no hay filtro de sucursal, mostrar una fila por cada sucursal)

@@ -59,7 +59,7 @@
           </div>
         </div>
         <div class="col-6">
-          <div @click="stats.ventasPendientes > 0 ? navegarAVentas('hoy', 'pendiente') : null"
+          <div @click="stats.ventasPendientes > 0 ? navegarAVentas('todos', 'pendiente') : null"
             :class="['card border-0 shadow-sm h-100', stats.ventasPendientes > 0 ? 'hover-card' : 'opacity-50']"
             :style="stats.ventasPendientes > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
             <div class="card-body">

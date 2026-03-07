@@ -1,7 +1,7 @@
 <template>
   <div class="bg-light min-vh-100">
-    <div class="container-fluid py-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="container-fluid py-2">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">Usuarios</h1>
         <button @click="abrirModalNuevo" class="btn btn-primary">
           <i class="fa-solid fa-plus me-1"></i>
@@ -10,12 +10,12 @@
       </div>
 
       <!-- Tabla de usuarios (Desktop) -->
-      <div class="d-none d-md-block">
+      <div class="d-none d-md-block mb-2">
         <TablaUsuarios :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario" @eliminar="eliminarUsuario" />
       </div>
 
       <!-- Vista móvil de usuarios (Mobile) -->
-      <div class="d-block d-md-none">
+      <div class="d-block d-md-none mb-2">
         <TablaUsuariosMobile :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario" @eliminar="eliminarUsuario" />
       </div>
 

@@ -64,10 +64,6 @@
                 title="Editar fechas">
                 <i class="fa-solid fa-calendar-days"></i>
               </button>
-              <button @click.stop="$emit('editar-cliente', membresia.cliente!)" class="btn btn-sm btn-outline-primary"
-                title="Editar cliente" :disabled="!membresia.cliente">
-                <i class="fa-solid fa-user-edit"></i>
-              </button>
               <button v-if="isSuperadmin" @click.stop="$emit('eliminar', membresia)"
                 class="btn btn-sm btn-outline-danger" title="Eliminar">
                 <i class="fa-solid fa-trash"></i>

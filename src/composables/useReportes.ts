@@ -42,15 +42,11 @@ export function useReportes() {
     sucursalId?: number | null,
     empleadoId?: number | null
   ) => {
-    if (!fechaDesde || !fechaHasta) {
-      return;
-    }
-
     loadingData.value = true;
     try {
       const { data: ventasData, error: reporteVentasError } = await getReporteVentas(
-        fechaDesde,
-        fechaHasta,
+        fechaDesde || undefined,
+        fechaHasta || undefined,
         sucursalId || undefined,
         empleadoId || undefined
       );

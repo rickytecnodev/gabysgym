@@ -554,7 +554,11 @@ onMounted(async () => {
   const filters = getFilters();
 
   if (filters) {
-    if (filters.periodo) {
+    if (filters.periodo === 'todos') {
+      periodoActivo.value = '';
+      filtroFechaDesde.value = '';
+      filtroFechaHasta.value = '';
+    } else if (filters.periodo) {
       periodoActivo.value = filters.periodo;
       aplicarPeriodo(filters.periodo);
     }

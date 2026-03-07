@@ -1,16 +1,15 @@
 <template>
-  <div class="card">
-    <div class="card-body">
-      <div v-if="loading" class="text-center py-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
-        </div>
+  <div class="p-3 rounded-3 border bg-white">
+    <div v-if="loading" class="text-center py-4">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
       </div>
-      <div v-else-if="usuarios.length === 0" class="text-center text-muted py-4">
-        No hay usuarios
-      </div>
-      <div v-else class="table-responsive">
-        <table class="table table-hover">
+    </div>
+    <div v-else-if="usuarios.length === 0" class="text-center text-muted py-4">
+      No hay usuarios
+    </div>
+    <div v-else class="table-responsive">
+      <table class="table table-hover mb-0">
           <thead>
             <tr>
               <th>Usuario</th>
@@ -50,8 +49,7 @@
               </td>
             </tr>
           </tbody>
-        </table>
-      </div>
+      </table>
     </div>
   </div>
 </template>

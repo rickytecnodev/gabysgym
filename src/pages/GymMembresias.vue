@@ -17,7 +17,7 @@
         @aplicar-periodo="aplicarPeriodo" @limpiar-periodo="limpiarPeriodo"
         @limpiar-filtro-cliente="limpiarFiltroCliente" @actualizar-estados="actualizarEstados" />
 
-        
+
       <!-- Tabla de membresías (Desktop) -->
       <div class="d-none d-md-block">
         <TablaMembresias :membresias="membresiasFiltradas" :is-superadmin="isSuperadmin"
@@ -192,11 +192,6 @@
                       title="Editar fechas de membresía">
                       <i class="fa-solid fa-calendar-days me-1"></i>
                       Editar Fechas
-                    </button>
-                    <button @click="editarCliente(membresiaDetalle!.cliente!)" class="btn btn-sm btn-outline-primary"
-                      title="Editar cliente" :disabled="!membresiaDetalle?.cliente">
-                      <i class="fa-solid fa-user-edit me-1"></i>
-                      Editar Cliente
                     </button>
                     <button v-if="isSuperadmin" @click="eliminarMembresia(membresiaDetalle!)"
                       class="btn btn-sm btn-outline-danger" title="Eliminar membresía">

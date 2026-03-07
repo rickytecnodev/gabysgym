@@ -7,7 +7,7 @@
         <select :value="periodoActivo"
           @change="($event.target as HTMLSelectElement).value === '' ? $emit('limpiar-periodo') : $emit('aplicar-periodo', ($event.target as HTMLSelectElement).value)"
           class="form-select" style="max-width: 250px;">
-          <option value="">Seleccionar período</option>
+          <option value="">Todos</option>
           <option value="hoy">Hoy</option>
           <option value="semana">Semana Actual</option>
           <option value="mes">Mes Actual</option>

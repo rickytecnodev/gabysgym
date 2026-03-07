@@ -1,7 +1,7 @@
 <template>
   <div class="bg-light min-vh-100">
-    <div class="container-fluid py-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="container-fluid py-2">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">Bitácora del Día</h1>
         <button @click="abrirModal" class="btn btn-primary">
           <i class="fa-solid fa-plus me-1"></i>
@@ -16,7 +16,7 @@
       />
 
       <!-- Tabla de bitácoras (Desktop) -->
-      <div class="d-none d-md-block">
+      <div class="d-none d-md-block mb-2">
         <TablaBitacoras
           :bitacoras="bitacoras"
           :is-superadmin="isSuperadmin"
@@ -25,7 +25,7 @@
       </div>
 
       <!-- Vista móvil de bitácoras (Mobile) -->
-      <div class="d-block d-md-none">
+      <div class="d-block d-md-none mb-2">
         <TablaBitacorasMobile
           :bitacoras="bitacoras"
           :is-superadmin="isSuperadmin"

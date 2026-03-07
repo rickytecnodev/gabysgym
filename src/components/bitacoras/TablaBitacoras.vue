@@ -1,8 +1,7 @@
 <template>
-  <div class="card">
-    <div class="card-body">
-      <div v-if="loading" class="text-center py-4">
-        <div class="spinner-border text-primary" role="status">
+  <div class="p-3 rounded-3 border bg-white">
+    <div v-if="loading" class="text-center py-4">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
           <span class="visually-hidden">Cargando...</span>
         </div>
       </div>
@@ -10,7 +9,7 @@
         No hay bitácoras registradas
       </div>
       <div v-else class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover mb-0">
           <thead>
             <tr>
               <th>Fecha</th>
@@ -18,7 +17,6 @@
               <th>Descripción</th>
               <th v-if="isSuperadmin">Empleado</th>
               <th v-if="isSuperadmin">Sucursal</th>
-              <th>Fecha Registro</th>
             </tr>
           </thead>
           <tbody>
@@ -36,12 +34,10 @@
               <td v-if="isSuperadmin">
                 {{ bitacora.empleado?.sucursal?.nombre || 'N/A' }}
               </td>
-              <td>{{ formatFecha(bitacora.fecha) }}</td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
   </div>
 </template>
 

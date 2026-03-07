@@ -1,53 +1,35 @@
 <template>
   <div class="bg-light min-vh-100">
-    <div class="container-fluid py-4">
-      <h1 class="h3 mb-4">Reportes</h1>
+    <div class="container-fluid py-2">
+      <div class="mb-3">
+        <h1 class="h3 mb-0">Reportes</h1>
+      </div>
 
       <!-- Filtros -->
-      <FiltrosReportes
-        :periodo-activo="periodoActivo"
-        :filtro-sucursal-id="filtroSucursalId"
-        :filtro-empleado-id="filtroEmpleadoId"
-        :filtro-fecha-desde="filtroFechaDesde"
-        :filtro-fecha-hasta="filtroFechaHasta"
-        :sucursales="sucursales"
-        :empleados-filtrados="empleadosFiltrados"
-        :is-superadmin="isSuperadmin"
-        @aplicar-periodo="aplicarPeriodo"
-        @limpiar-periodo="limpiarPeriodo"
-        @update:filtroSucursalId="filtroSucursalId = $event"
-        @update:filtroEmpleadoId="filtroEmpleadoId = $event"
+      <FiltrosReportes :periodo-activo="periodoActivo" :filtro-sucursal-id="filtroSucursalId"
+        :filtro-empleado-id="filtroEmpleadoId" :filtro-fecha-desde="filtroFechaDesde"
+        :filtro-fecha-hasta="filtroFechaHasta" :sucursales="sucursales" :empleados-filtrados="empleadosFiltrados"
+        :is-superadmin="isSuperadmin" @aplicar-periodo="aplicarPeriodo" @limpiar-periodo="limpiarPeriodo"
+        @update:filtroSucursalId="filtroSucursalId = $event" @update:filtroEmpleadoId="filtroEmpleadoId = $event"
         @update:filtroFechaDesde="filtroFechaDesde = $event; recargarReportes()"
-        @update:filtroFechaHasta="filtroFechaHasta = $event; recargarReportes()"
-      />
+        @update:filtroFechaHasta="filtroFechaHasta = $event; recargarReportes()" />
 
       <!-- Reporte de Ventas (Desktop) -->
-      <div class="d-none d-md-block">
-        <TablaReporteVentas
-          :reporte-ventas="reporteVentas"
-          :is-superadmin="isSuperadmin"
-          :filtro-sucursal-id="filtroSucursalId"
-          :filtro-empleado-id="filtroEmpleadoId"
-          :loading="loadingDataReportes"
-        />
+      <div class="d-none d-md-block mb-2">
+        <TablaReporteVentas :reporte-ventas="reporteVentas" :is-superadmin="isSuperadmin"
+          :filtro-sucursal-id="filtroSucursalId" :filtro-empleado-id="filtroEmpleadoId"
+          :loading="loadingDataReportes" />
       </div>
 
       <!-- Vista móvil de reporte de ventas (Mobile) -->
-      <div class="d-block d-md-none">
-        <TablaReporteVentasMobile
-          :reporte-ventas="reporteVentas"
-          :is-superadmin="isSuperadmin"
-          :filtro-sucursal-id="filtroSucursalId"
-          :filtro-empleado-id="filtroEmpleadoId"
-          :loading="loadingDataReportes"
-        />
+      <div class="d-block d-md-none mb-2">
+        <TablaReporteVentasMobile :reporte-ventas="reporteVentas" :is-superadmin="isSuperadmin"
+          :filtro-sucursal-id="filtroSucursalId" :filtro-empleado-id="filtroEmpleadoId"
+          :loading="loadingDataReportes" />
       </div>
 
       <!-- Reporte de Membresías -->
-      <TarjetasReporteMembresias
-        :reporte-membresias="reporteMembresias"
-        :loading="loadingDataReportes"
-      />
+      <TarjetasReporteMembresias :reporte-membresias="reporteMembresias" :loading="loadingDataReportes" />
     </div>
   </div>
 </template>
@@ -87,18 +69,16 @@ const empleadosFiltrados = computed(() => {
 });
 
 const recargarReportes = () => {
-  if (filtroFechaDesde.value && filtroFechaHasta.value) {
-    const sucursalId = isSuperadmin.value 
-      ? (filtroSucursalId.value || null)
-      : currentSucursalId.value;
-    
-    cargarReportes(
-      filtroFechaDesde.value,
-      filtroFechaHasta.value,
-      sucursalId,
-      filtroEmpleadoId.value || undefined
-    );
-  }
+  const sucursalId = isSuperadmin.value
+    ? (filtroSucursalId.value || null)
+    : currentSucursalId.value;
+
+  cargarReportes(
+    filtroFechaDesde.value,
+    filtroFechaHasta.value,
+    sucursalId,
+    filtroEmpleadoId.value || undefined
+  );
 };
 
 watch([filtroFechaDesde, filtroFechaHasta, filtroEmpleadoId, filtroSucursalId], () => {
@@ -117,22 +97,22 @@ watch(filtroSucursalId, () => {
 onMounted(async () => {
   periodoActivo.value = 'hoy';
   const fechas = calcularFechasPeriodo('hoy');
-  
+
   if (fechas.desde && fechas.hasta) {
     filtroFechaDesde.value = fechas.desde;
     filtroFechaHasta.value = fechas.hasta;
   }
-  
+
   if (isSuperadmin.value) {
     await loadSucursales();
   }
-  
+
   await cargarEmpleados();
-  
-  const sucursalId = isSuperadmin.value 
+
+  const sucursalId = isSuperadmin.value
     ? (filtroSucursalId.value || null)
     : currentSucursalId.value;
-  
+
   await cargarReportes(
     filtroFechaDesde.value,
     filtroFechaHasta.value,
@@ -144,11 +124,11 @@ onMounted(async () => {
 const calcularFechasPeriodo = (periodo: string) => {
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
-  
+
   let desde: Date;
   let hasta: Date = new Date(hoy);
   hasta.setHours(23, 59, 59, 999);
-  
+
   switch (periodo) {
     case 'hoy':
       desde = new Date(hoy);
@@ -168,7 +148,7 @@ const calcularFechasPeriodo = (periodo: string) => {
     default:
       return { desde: null, hasta: null };
   }
-  
+
   return {
     desde: desde.toISOString().split('T')[0],
     hasta: hasta.toISOString().split('T')[0]
@@ -178,15 +158,15 @@ const calcularFechasPeriodo = (periodo: string) => {
 const aplicarPeriodo = (periodo: string) => {
   periodoActivo.value = periodo;
   const fechas = calcularFechasPeriodo(periodo);
-  
+
   if (fechas.desde && fechas.hasta) {
     filtroFechaDesde.value = fechas.desde;
     filtroFechaHasta.value = fechas.hasta;
-    
-    const sucursalId = isSuperadmin.value 
+
+    const sucursalId = isSuperadmin.value
       ? (filtroSucursalId.value || null)
       : currentSucursalId.value;
-    
+
     cargarReportes(
       filtroFechaDesde.value,
       filtroFechaHasta.value,
@@ -198,17 +178,16 @@ const aplicarPeriodo = (periodo: string) => {
 
 const limpiarPeriodo = () => {
   periodoActivo.value = '';
-  const hoy = new Date();
-  filtroFechaDesde.value = hoy.toISOString().split('T')[0];
-  filtroFechaHasta.value = hoy.toISOString().split('T')[0];
-  
-  const sucursalId = isSuperadmin.value 
+  filtroFechaDesde.value = '';
+  filtroFechaHasta.value = '';
+
+  const sucursalId = isSuperadmin.value
     ? (filtroSucursalId.value || null)
     : currentSucursalId.value;
-  
+
   cargarReportes(
-    filtroFechaDesde.value,
-    filtroFechaHasta.value,
+    '',
+    '',
     sucursalId,
     filtroEmpleadoId.value || undefined
   );
@@ -217,4 +196,3 @@ const limpiarPeriodo = () => {
 // Las funciones cargarEmpleados y cargarReportes ahora vienen del composable
 
 </script>
-
