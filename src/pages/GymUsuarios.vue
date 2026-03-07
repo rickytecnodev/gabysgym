@@ -20,76 +20,64 @@
       </div>
 
       <!-- Modal de usuario (editar/crear) -->
-      <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">{{ usuarioEditando ? 'Editar' : 'Nuevo' }} Usuario</h5>
-              <button type="button" class="btn-close" @click="cerrarModal"></button>
-            </div>
-            <div class="modal-body">
-              <form @submit.prevent="guardarUsuario">
-                <div class="mb-3">
-                  <label class="form-label">Usuario *</label>
-                  <input v-model="formUsuario.username" type="text" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">{{ usuarioEditando ? 'Nueva ' : '' }}
-                    Contraseña {{ usuarioEditando ? '(dejar vacío para no cambiar)' : '*' }}</label>
-                  <input v-model="formUsuario.password" type="password" class="form-control"
-                    :required="!usuarioEditando">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Nombre Completo *</label>
-                  <input v-model="formUsuario.nombre_completo" type="text" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Email</label>
-                  <input v-model="formUsuario.email" type="email" class="form-control">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Teléfono</label>
-                  <input v-model="formUsuario.telefono" type="text" class="form-control">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Rol *</label>
-                  <select v-model="formUsuario.rol" class="form-select" required>
-                    <option value="empleado">Empleado</option>
-                    <option value="superadmin">Superadmin</option>
-                  </select>
-                </div>
-                <div class="mb-3" v-if="formUsuario.rol === 'empleado'">
-                  <label class="form-label">Sucursal</label>
-                  <select v-model.number="formUsuario.sucursal_id" class="form-select">
-                    <option :value="null">Sin sucursal</option>
-                    <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-                      {{ sucursal.nombre }}
-                    </option>
-                  </select>
-                </div>
-                <div class="mb-3" v-else>
-                  <input v-model="formUsuario.sucursal_id" type="hidden">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Estado *</label>
-                  <select v-model="formUsuario.activo" class="form-select" required>
-                    <option :value="true">Activo</option>
-                    <option :value="false">Inactivo</option>
-                  </select>
-                </div>
-                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
-                  <button type="submit" class="btn btn-primary" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                    Guardar
-                  </button>
-                </div>
-              </form>
-            </div>
+      <GymModal v-model:show="showModal" :title="(usuarioEditando ? 'Editar' : 'Nuevo') + ' Usuario'">
+        <form id="formUsuario" @submit.prevent="guardarUsuario">
+          <div class="mb-3">
+            <label class="form-label">Usuario *</label>
+            <input v-model="formUsuario.username" type="text" class="form-control" required>
           </div>
-        </div>
-      </div>
+          <div class="mb-3">
+            <label class="form-label">{{ usuarioEditando ? 'Nueva ' : '' }}Contraseña {{ usuarioEditando ? '(dejar vacío para no cambiar)' : '*' }}</label>
+            <input v-model="formUsuario.password" type="password" class="form-control" :required="!usuarioEditando">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nombre Completo *</label>
+            <input v-model="formUsuario.nombre_completo" type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input v-model="formUsuario.email" type="email" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input v-model="formUsuario.telefono" type="text" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Rol *</label>
+            <select v-model="formUsuario.rol" class="form-select" required>
+              <option value="empleado">Empleado</option>
+              <option value="superadmin">Superadmin</option>
+            </select>
+          </div>
+          <div class="mb-3" v-if="formUsuario.rol === 'empleado'">
+            <label class="form-label">Sucursal</label>
+            <select v-model.number="formUsuario.sucursal_id" class="form-select">
+              <option :value="null">Sin sucursal</option>
+              <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
+                {{ sucursal.nombre }}
+              </option>
+            </select>
+          </div>
+          <div class="mb-3" v-else>
+            <input v-model="formUsuario.sucursal_id" type="hidden">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Estado *</label>
+            <select v-model="formUsuario.activo" class="form-select" required>
+              <option :value="true">Activo</option>
+              <option :value="false">Inactivo</option>
+            </select>
+          </div>
+          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        </form>
+        <template #footer>
+          <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
+          <button type="submit" form="formUsuario" class="btn btn-primary" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+            Guardar
+          </button>
+        </template>
+      </GymModal>
     </div>
   </div>
 </template>
@@ -98,6 +86,7 @@
 import { ref, onMounted } from 'vue';
 import { fetchEmpleados, createEmpleado, updateEmpleado, deleteEmpleado, fetchSucursales } from '@/services/gymApi';
 import type { Empleado, Sucursal } from '@/types/gym';
+import GymModal from '@/components/GymModal.vue';
 import TablaUsuarios from '@/components/usuarios/TablaUsuarios.vue';
 import TablaUsuariosMobile from '@/components/usuarios/TablaUsuariosMobile.vue';
 import Swal from 'sweetalert2';

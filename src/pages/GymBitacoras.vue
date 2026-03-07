@@ -34,58 +34,37 @@
       </div>
 
       <!-- Modal de nueva bitácora -->
-      <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Nueva Bitácora</h5>
-              <button type="button" class="btn-close" @click="cerrarModal"></button>
-            </div>
-            <div class="modal-body">
-              <form @submit.prevent="guardarBitacora">
-                <div class="mb-3">
-                  <label class="form-label">Fecha *</label>
-                  <input 
-                    v-model="formBitacora.fecha" 
-                    type="date" 
-                    class="form-control" 
-                    required
-                    disabled
-                    :title="'La fecha no se puede editar. Se usa la fecha actual automáticamente.'"
-                  >
-                  <small class="text-muted">La fecha se establece automáticamente con la fecha actual y no se puede modificar.</small>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Tipo *</label>
-                  <select v-model="formBitacora.tipo" class="form-select" required>
-                    <option value="nota">Nota</option>
-                    <option value="incidente">Incidente</option>
-                    <option value="observacion">Observación</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Descripción *</label>
-                  <textarea 
-                    v-model="formBitacora.descripcion" 
-                    class="form-control" 
-                    rows="4" 
-                    required
-                    placeholder="Describe el incidente, nota u observación..."
-                  ></textarea>
-                </div>
-                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
-                  <button type="submit" class="btn btn-primary" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                    Guardar
-                  </button>
-                </div>
-              </form>
-            </div>
+      <GymModal v-model:show="showModal" title="Nueva Bitácora">
+        <form id="formBitacora" @submit.prevent="guardarBitacora">
+          <div class="mb-3">
+            <label class="form-label">Fecha *</label>
+            <input v-model="formBitacora.fecha" type="date" class="form-control" required disabled
+              title="La fecha no se puede editar. Se usa la fecha actual automáticamente.">
+            <small class="text-muted">La fecha se establece automáticamente con la fecha actual y no se puede modificar.</small>
           </div>
-        </div>
-      </div>
+          <div class="mb-3">
+            <label class="form-label">Tipo *</label>
+            <select v-model="formBitacora.tipo" class="form-select" required>
+              <option value="nota">Nota</option>
+              <option value="incidente">Incidente</option>
+              <option value="observacion">Observación</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción *</label>
+            <textarea v-model="formBitacora.descripcion" class="form-control" rows="4" required
+              placeholder="Describe el incidente, nota u observación..."></textarea>
+          </div>
+          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        </form>
+        <template #footer>
+          <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
+          <button type="submit" form="formBitacora" class="btn btn-primary" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+            Guardar
+          </button>
+        </template>
+      </GymModal>
     </div>
   </div>
 </template>
@@ -96,6 +75,7 @@ import { useAuth } from '@/composables/useAuth';
 import { useBitacoras } from '@/composables/useBitacoras';
 import { getFechaActualLocal } from '@/utils/dateFormatter';
 import type { BitacoraDiaForm } from '@/types/gym';
+import GymModal from '@/components/GymModal.vue';
 import FiltrosBitacoras from '@/components/bitacoras/FiltrosBitacoras.vue';
 import TablaBitacoras from '@/components/bitacoras/TablaBitacoras.vue';
 import TablaBitacorasMobile from '@/components/bitacoras/TablaBitacorasMobile.vue';

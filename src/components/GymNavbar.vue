@@ -1,94 +1,54 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark shadow fixed-top" style="background-color: #224a9d;">
+  <nav class="navbar navbar-expand-lg navbar-dark shadow fixed-top" style="background-color: var(--gym-primary);">
     <div class="container-fluid">
       <router-link class="navbar-brand fw-bold" to="/gym/dashboard">
         <i class="fa-solid fa-dumbbell me-2"></i>
         System Gym
       </router-link>
-      <button 
-        class="navbar-toggler border-0" 
-        type="button" 
-        @click="toggleMenu"
-        aria-label="Abrir menú"
-      >
+      <button class="navbar-toggler border-0" type="button" @click="toggleMenu" aria-label="Abrir menú">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" :class="{ show: menuOpen }">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item" v-if="isSuperadmin">
-            <router-link 
-              to="/gym/dashboard" 
-              class="nav-link px-3" 
-              active-class="active"
-              @click="closeMenu"
-            >
+            <router-link to="/gym/dashboard" class="nav-link px-3" active-class="active" @click="closeMenu">
               <i class="fa-solid fa-home me-2"></i>
               Inicio
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link 
-              to="/gym/productos" 
-              class="nav-link px-3" 
-              active-class="active"
-              @click="closeMenu"
-            >
+            <router-link to="/gym/productos" class="nav-link px-3" active-class="active" @click="closeMenu">
               <i class="fa-solid fa-box me-2"></i>
               Productos
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link 
-              to="/gym/ventas" 
-              class="nav-link px-3" 
-              active-class="active"
-              @click="closeMenu"
-            >
+            <router-link to="/gym/ventas" class="nav-link px-3" active-class="active" @click="closeMenu">
               <i class="fa-solid fa-cash-register me-2"></i>
               Ventas
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link 
-              to="/gym/membresias" 
-              class="nav-link px-3" 
-              active-class="active"
-              @click="closeMenu"
-            >
+            <router-link to="/gym/membresias" class="nav-link px-3" active-class="active" @click="closeMenu">
               <i class="fa-solid fa-id-card me-2"></i>
               Membresías
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link 
-              to="/gym/clientes" 
-              class="nav-link px-3" 
-              active-class="active"
-              @click="closeMenu"
-            >
+            <router-link to="/gym/clientes" class="nav-link px-3" active-class="active" @click="closeMenu">
               <i class="fa-solid fa-users me-2"></i>
               Clientes
             </router-link>
           </li>
 
           <li class="nav-item">
-            <router-link 
-              to="/gym/reportes" 
-              class="nav-link px-3" 
-              active-class="active"
-              @click="closeMenu"
-            >
+            <router-link to="/gym/reportes" class="nav-link px-3" active-class="active" @click="closeMenu">
               <i class="fa-solid fa-chart-bar me-2"></i>
               Reportes
             </router-link>
           </li>
           <li class="nav-item" v-if="isSuperadmin">
-            <router-link 
-              to="/gym/usuarios" 
-              class="nav-link px-3" 
-              active-class="active"
-              @click="closeMenu"
-            >
+            <router-link to="/gym/usuarios" class="nav-link px-3" active-class="active" @click="closeMenu">
               <i class="fa-solid fa-user-gear me-2"></i>
               Usuarios
             </router-link>
@@ -96,12 +56,8 @@
         </ul>
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
-            <a 
-              class="nav-link dropdown-toggle d-flex align-items-center px-3" 
-              href="#" 
-              @click.prevent="toggleDropdown"
-              role="button"
-            >
+            <a class="nav-link dropdown-toggle d-flex align-items-center px-3" href="#" @click.prevent="toggleDropdown"
+              role="button">
               <i class="fa-solid fa-user-circle me-2"></i>
               <span>{{ currentUser?.nombre_completo || 'Usuario' }}</span>
             </a>
@@ -122,7 +78,9 @@
                   </small>
                 </div>
               </li>
-              <li><hr class="dropdown-divider my-2"></li>
+              <li>
+                <hr class="dropdown-divider my-2">
+              </li>
               <li>
                 <router-link to="/gym/perfil" class="dropdown-item" @click="closeMenu">
                   <i class="fa-solid fa-user-edit me-2"></i>
@@ -246,15 +204,14 @@ const handleLogout = () => {
 
 @media (max-width: 991.98px) {
   .navbar-collapse {
-    background-color: rgba(34, 74, 157, 0.98);
+    background-color: rgba(var(--bs-primary-rgb), 0.98);
     border-radius: 0.5rem;
     margin-top: 0.5rem;
     padding: 0.5rem;
   }
-  
+
   .nav-link {
     margin: 0.25rem 0;
   }
 }
 </style>
-

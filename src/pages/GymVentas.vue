@@ -51,15 +51,8 @@
       </TabsVentas>
 
       <!-- Modal de nueva venta -->
-      <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Nueva Venta</h5>
-              <button type="button" class="btn-close" @click="cerrarModal"></button>
-            </div>
-            <div class="modal-body">
-              <form @submit.prevent="guardarVenta">
+      <GymModal v-model:show="showModal" title="Nueva Venta" size="lg">
+        <form id="formVenta" @submit.prevent="guardarVenta">
                 <div class="mb-3" v-if="isSuperadmin">
                   <label class="form-label">Sucursal *</label>
                   <select v-model="sucursalSeleccionada" class="form-select" required>
@@ -144,30 +137,20 @@
                   <textarea v-model="formVenta.notas" class="form-control" rows="2"></textarea>
                 </div>
 
-                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
-                  <button type="submit" class="btn btn-primary" :disabled="loading || productosVenta.length === 0">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                    Guardar Venta
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        </form>
+        <template #footer>
+          <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
+          <button type="submit" form="formVenta" class="btn btn-primary" :disabled="loading || productosVenta.length === 0">
+            <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+            Guardar Venta
+          </button>
+        </template>
+      </GymModal>
 
       <!-- Modal de detalle de venta -->
-      <div v-if="showDetalleModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Detalle de Venta #{{ ventaDetalle?.id }}</h5>
-              <button type="button" class="btn-close" @click="showDetalleModal = false"></button>
-            </div>
-            <div class="modal-body">
-              <div v-if="ventaDetalle">
+      <GymModal v-model:show="showDetalleModal" :title="'Detalle de Venta #' + (ventaDetalle?.id ?? '')">
+        <div v-if="ventaDetalle">
                 <p><strong>Fecha:</strong> {{ formatFecha(ventaDetalle.fecha_venta) }}</p>
                 <p><strong>Cliente:</strong> {{ ventaDetalle.cliente?.nombre_completo || 'Cliente general' }}</p>
                 <p><strong>Empleado:</strong> {{ ventaDetalle.empleado?.nombre_completo }}</p>
@@ -203,31 +186,19 @@
                     </tr>
                   </tfoot>
                 </table>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button v-if="ventaDetalle?.estado_pago === 'pendiente'" @click="marcarPagadoDesdeDetalle"
-                class="btn btn-success me-2">
-                <i class="fa-solid fa-check me-1"></i>
-                Marcar como Pagado
-              </button>
-              <button type="button" class="btn btn-secondary" @click="showDetalleModal = false">Cerrar</button>
-            </div>
-          </div>
         </div>
-      </div>
+        <template #footer>
+          <button v-if="ventaDetalle?.estado_pago === 'pendiente'" @click="marcarPagadoDesdeDetalle" class="btn btn-success me-2">
+            <i class="fa-solid fa-check me-1"></i>
+            Marcar como Pagado
+          </button>
+          <button type="button" class="btn btn-secondary" @click="showDetalleModal = false">Cerrar</button>
+        </template>
+      </GymModal>
 
       <!-- Modal de detalle de membresía pagada -->
-      <div v-if="showDetalleMembresiaModal" class="modal show d-block" tabindex="-1"
-        style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Detalle de Membresía</h5>
-              <button type="button" class="btn-close" @click="showDetalleMembresiaModal = false"></button>
-            </div>
-            <div class="modal-body">
-              <div v-if="pagoMembresiaDetalle && pagoMembresiaDetalle.membresia">
+      <GymModal v-model:show="showDetalleMembresiaModal" title="Detalle de Membresía" size="lg">
+        <div v-if="pagoMembresiaDetalle && pagoMembresiaDetalle.membresia">
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <h6>Información del Cliente</h6>
@@ -264,26 +235,15 @@
                     <p v-if="pagoMembresiaDetalle.notas"><strong>Notas:</strong> {{ pagoMembresiaDetalle.notas }}</p>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" @click="showDetalleMembresiaModal = false">Cerrar</button>
-            </div>
-          </div>
         </div>
-      </div>
+        <template #footer>
+          <button type="button" class="btn btn-secondary" @click="showDetalleMembresiaModal = false">Cerrar</button>
+        </template>
+      </GymModal>
 
       <!-- Modal de editar pago de membresía -->
-      <div v-if="showModalEditarPago" class="modal show d-block" tabindex="-1"
-        style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Editar Pago de Membresía</h5>
-              <button type="button" class="btn-close" @click="cerrarModalEditarPago"></button>
-            </div>
-            <div class="modal-body">
-              <form @submit.prevent="guardarPagoEditado">
+      <GymModal v-model:show="showModalEditarPago" title="Editar Pago de Membresía">
+        <form id="formPagoEdit" @submit.prevent="guardarPagoEditado">
                 <div class="mb-3">
                   <label class="form-label">Fecha de Pago *</label>
                   <input v-model="formPagoEdit.fecha_pago" type="date" class="form-control" required>
@@ -309,31 +269,20 @@
                   <label class="form-label">Notas</label>
                   <textarea v-model="formPagoEdit.notas" class="form-control" rows="2"></textarea>
                 </div>
-                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="cerrarModalEditarPago">Cancelar</button>
-                  <button type="submit" class="btn btn-primary" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                    Guardar
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        </form>
+        <template #footer>
+          <button type="button" class="btn btn-secondary" @click="cerrarModalEditarPago">Cancelar</button>
+          <button type="submit" form="formPagoEdit" class="btn btn-primary" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+            Guardar
+          </button>
+        </template>
+      </GymModal>
 
       <!-- Modal de editar venta -->
-      <div v-if="showModalEditarVenta" class="modal show d-block" tabindex="-1"
-        style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Editar Venta #{{ ventaEditando?.id }}</h5>
-              <button type="button" class="btn-close" @click="cerrarModalEditarVenta"></button>
-            </div>
-            <div class="modal-body">
-              <form @submit.prevent="guardarVentaEditada">
+      <GymModal v-model:show="showModalEditarVenta" :title="'Editar Venta #' + (ventaEditando?.id ?? '')" size="lg">
+        <form id="formVentaEdit" @submit.prevent="guardarVentaEditada">
                 <div class="mb-3">
                   <label class="form-label">Agregar Producto</label>
                   <div class="row g-2 mb-2">
@@ -418,19 +367,16 @@
                   </select>
                 </div>
 
-                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="cerrarModalEditarVenta">Cancelar</button>
-                  <button type="submit" class="btn btn-primary" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                    Guardar Cambios
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        </form>
+        <template #footer>
+          <button type="button" class="btn btn-secondary" @click="cerrarModalEditarVenta">Cancelar</button>
+          <button type="submit" form="formVentaEdit" class="btn btn-primary" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+            Guardar Cambios
+          </button>
+        </template>
+      </GymModal>
     </div>
   </div>
 </template>
@@ -445,6 +391,7 @@ import type { Venta, VentaForm, PagoMembresia } from '@/types/gym';
 import Swal from 'sweetalert2';
 import { getFechaHoraActualLocal, getFechaActualLocal } from '@/utils/dateFormatter';
 import { formatFecha, formatMesPagado } from '@/utils/dateFormatter';
+import GymModal from '@/components/GymModal.vue';
 import FiltrosVentas from '@/components/ventas/FiltrosVentas.vue';
 import TabsVentas from '@/components/ventas/TabsVentas.vue';
 import TablaVentasProductos from '@/components/ventas/TablaVentasProductos.vue';

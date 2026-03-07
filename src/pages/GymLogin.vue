@@ -40,8 +40,7 @@
                   {{ successMessage }}
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3"
-                  style="background-color: #224a9d; border-color: #224a9d;" :disabled="loading">
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3" :disabled="loading">
                   <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status"
                     aria-hidden="true"></span>
                   <span v-if="!loading">Iniciar Sesión</span>

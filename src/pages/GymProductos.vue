@@ -48,126 +48,104 @@
       </TabsProductos>
 
       <!-- Modal de producto -->
-      <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">{{ productoEditando ? 'Editar' : 'Nuevo' }} Producto</h5>
-              <button type="button" class="btn-close" @click="cerrarModal"></button>
+      <GymModal v-model:show="showModal" :title="(productoEditando ? 'Editar' : 'Nuevo') + ' Producto'">
+        <form id="formProducto" @submit.prevent="guardarProducto">
+          <div v-if="isSuperadmin" class="mb-3">
+            <label class="form-label">Sucursal *</label>
+            <select v-model="sucursalSeleccionada" class="form-select" required>
+              <option value="">Selecciona una sucursal</option>
+              <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
+                {{ sucursal.nombre }}
+              </option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nombre *</label>
+            <input v-model="formProducto.nombre" type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea v-model="formProducto.descripcion" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Precio *</label>
+              <input v-model.number="formProducto.precio" type="number" step="0.01" class="form-control" required>
             </div>
-            <div class="modal-body">
-              <form @submit.prevent="guardarProducto">
-                <div v-if="isSuperadmin" class="mb-3">
-                  <label class="form-label">Sucursal *</label>
-                  <select v-model="sucursalSeleccionada" class="form-select" required>
-                    <option value="">Selecciona una sucursal</option>
-                    <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-                      {{ sucursal.nombre }}
-                    </option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Nombre *</label>
-                  <input v-model="formProducto.nombre" type="text" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Descripción</label>
-                  <textarea v-model="formProducto.descripcion" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Precio *</label>
-                    <input v-model.number="formProducto.precio" type="number" step="0.01" class="form-control" required>
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Stock *</label>
-                    <input v-model.number="formProducto.stock" type="number" class="form-control" required>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Categoría</label>
-                    <select v-model="formProducto.categoria" class="form-select">
-                      <option value="">Selecciona...</option>
-                      <option value="suplementos">Suplementos</option>
-                      <option value="ropa">Ropa</option>
-                      <option value="accesorios">Accesorios</option>
-                      <option value="bebidas">Bebidas</option>
-                      <option value="otros">Otros</option>
-                    </select>
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Estado *</label>
-                    <select v-model="formProducto.estado" class="form-select" required>
-                      <option value="activo">Activo</option>
-                      <option value="inactivo">Inactivo</option>
-                    </select>
-                  </div>
-                </div>
-                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
-                  <button type="submit" class="btn btn-primary" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                    Guardar
-                  </button>
-                </div>
-              </form>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Stock *</label>
+              <input v-model.number="formProducto.stock" type="number" class="form-control" required>
             </div>
           </div>
-        </div>
-      </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Categoría</label>
+              <select v-model="formProducto.categoria" class="form-select">
+                <option value="">Selecciona...</option>
+                <option value="suplementos">Suplementos</option>
+                <option value="ropa">Ropa</option>
+                <option value="accesorios">Accesorios</option>
+                <option value="bebidas">Bebidas</option>
+                <option value="otros">Otros</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Estado *</label>
+              <select v-model="formProducto.estado" class="form-select" required>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+              </select>
+            </div>
+          </div>
+          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        </form>
+        <template #footer>
+          <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
+          <button type="submit" form="formProducto" class="btn btn-primary" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+            Guardar
+          </button>
+        </template>
+      </GymModal>
 
       <!-- Modal de tipo de membresía -->
-      <div v-if="showModalTipoMembresia" class="modal show d-block" tabindex="-1"
-        style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">{{ tipoMembresiaEditando ? 'Editar' : 'Nuevo' }} Tipo de Membresía</h5>
-              <button type="button" class="btn-close" @click="cerrarModalTipoMembresia"></button>
+      <GymModal v-model:show="showModalTipoMembresia" :title="(tipoMembresiaEditando ? 'Editar' : 'Nuevo') + ' Tipo de Membresía'">
+        <form id="formTipoMembresia" @submit.prevent="guardarTipoMembresia">
+          <div class="mb-3">
+            <label class="form-label">Nombre *</label>
+            <input v-model="formTipoMembresia.nombre" type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea v-model="formTipoMembresia.descripcion" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Precio Mensual *</label>
+              <input v-model.number="formTipoMembresia.precio_mensual" type="number" step="0.01" class="form-control" required>
             </div>
-            <div class="modal-body">
-              <form @submit.prevent="guardarTipoMembresia">
-                <div class="mb-3">
-                  <label class="form-label">Nombre *</label>
-                  <input v-model="formTipoMembresia.nombre" type="text" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Descripción</label>
-                  <textarea v-model="formTipoMembresia.descripcion" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Precio Mensual *</label>
-                    <input v-model.number="formTipoMembresia.precio_mensual" type="number" step="0.01"
-                      class="form-control" required>
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Duración (días) *</label>
-                    <input v-model.number="formTipoMembresia.duracion_dias" type="number" class="form-control" required>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Estado *</label>
-                  <select v-model="formTipoMembresia.activa" class="form-select" required>
-                    <option :value="true">Activa</option>
-                    <option :value="false">Inactiva</option>
-                  </select>
-                </div>
-                <div v-if="errorMessageTipoMembresia" class="alert alert-danger">{{ errorMessageTipoMembresia }}</div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="cerrarModalTipoMembresia">Cancelar</button>
-                  <button type="submit" class="btn btn-primary" :disabled="loadingTipoMembresia">
-                    <span v-if="loadingTipoMembresia" class="spinner-border spinner-border-sm me-1"></span>
-                    Guardar
-                  </button>
-                </div>
-              </form>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Duración (días) *</label>
+              <input v-model.number="formTipoMembresia.duracion_dias" type="number" class="form-control" required>
             </div>
           </div>
-        </div>
-      </div>
+          <div class="mb-3">
+            <label class="form-label">Estado *</label>
+            <select v-model="formTipoMembresia.activa" class="form-select" required>
+              <option :value="true">Activa</option>
+              <option :value="false">Inactiva</option>
+            </select>
+          </div>
+          <div v-if="errorMessageTipoMembresia" class="alert alert-danger">{{ errorMessageTipoMembresia }}</div>
+        </form>
+        <template #footer>
+          <button type="button" class="btn btn-secondary" @click="cerrarModalTipoMembresia">Cancelar</button>
+          <button type="submit" form="formTipoMembresia" class="btn btn-primary" :disabled="loadingTipoMembresia">
+            <span v-if="loadingTipoMembresia" class="spinner-border spinner-border-sm me-1"></span>
+            Guardar
+          </button>
+        </template>
+      </GymModal>
     </div>
   </div>
 </template>
@@ -183,6 +161,7 @@ import {
   deleteTipoMembresia
 } from '@/services/gymApi';
 import type { Producto, ProductoForm, TipoMembresia } from '@/types/gym';
+import GymModal from '@/components/GymModal.vue';
 import FiltrosProductos from '@/components/productos/FiltrosProductos.vue';
 import TablaProductos from '@/components/productos/TablaProductos.vue';
 import TablaProductosMobile from '@/components/productos/TablaProductosMobile.vue';

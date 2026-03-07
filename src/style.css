@@ -1,3 +1,13 @@
+/* ========== Tema del sistema: un solo lugar para el color principal ========== */
+:root {
+  --gym-primary: #224a9d;
+  --gym-primary-dark: #1b294d;
+  --gym-primary-darker: #01153a;
+  /* Bootstrap usará este color en btn-primary, bg-primary, text-primary, etc. */
+  --bs-primary: var(--gym-primary);
+  --bs-primary-rgb: 34, 74, 157;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -15,7 +25,7 @@ body {
 body:has(.login-page) {
   padding-top: 0;
   min-height: 100vh;
-  background: linear-gradient(135deg, #01153a 0%, #1b294d 50%, #224a9d 100%);
+  background: linear-gradient(135deg, var(--gym-primary-darker) 0%, var(--gym-primary-dark) 50%, var(--gym-primary) 100%);
 }
 
 html:has(.login-page) {

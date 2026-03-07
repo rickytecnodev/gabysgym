@@ -26,111 +26,90 @@
       </div>
 
       <!-- Modal de detalle de cliente -->
-      <div v-if="showDetalleModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Detalle de Cliente</h5>
-              <button type="button" class="btn-close" @click="showDetalleModal = false"></button>
+      <GymModal v-model:show="showDetalleModal" title="Detalle de Cliente" size="lg">
+        <div v-if="clienteDetalle">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <h6>Información Personal</h6>
+              <p><strong>Nombre:</strong> {{ clienteDetalle.nombre_completo }}</p>
+              <p><strong>Email:</strong> {{ clienteDetalle.email || 'N/A' }}</p>
+              <p v-if="isSuperadmin"><strong>Sucursal:</strong> {{ clienteDetalle.sucursal?.nombre || 'N/A' }}</p>
             </div>
-            <div class="modal-body">
-              <div v-if="clienteDetalle">
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <h6>Información Personal</h6>
-                    <p><strong>Nombre:</strong> {{ clienteDetalle.nombre_completo }}</p>
-                    <p><strong>Email:</strong> {{ clienteDetalle.email || 'N/A' }}</p>
-                    <p v-if="isSuperadmin"><strong>Sucursal:</strong> {{ clienteDetalle.sucursal?.nombre || 'N/A' }}</p>
-                  </div>
-                  <div class="col-md-6">
-                    <h6>Contacto</h6>
-                    <p>
-                      <i class="fa-solid fa-phone me-1"></i>
-                      <strong>Teléfono:</strong> {{ clienteDetalle.telefono }}
-                    </p>
-                    <p v-if="clienteDetalle.whatsapp">
-                      <i class="fa-brands fa-whatsapp me-1 text-success"></i>
-                      <strong>WhatsApp:</strong> {{ clienteDetalle.whatsapp }}
-                    </p>
-                    <p v-if="clienteDetalle.direccion">
-                      <i class="fa-solid fa-map-marker-alt me-1"></i>
-                      <strong>Dirección:</strong> {{ clienteDetalle.direccion }}
-                    </p>
-                  </div>
-                </div>
-                <hr>
-                <h6>Membresías</h6>
-                <div v-if="detalleMembresiaDisplay.badgeClass !== 'text-muted'">
-                  <span :class="['badge me-1', detalleMembresiaDisplay.badgeClass]">{{ detalleMembresiaDisplay.label }}</span>
-                  <span v-if="detalleMembresiaDisplay.subLabel" :class="['badge me-1', detalleMembresiaDisplay.subLabel === 'Por vencer' ? 'bg-warning text-dark' : 'bg-danger']">
-                    {{ detalleMembresiaDisplay.subLabel }}
-                  </span>
-                  <div v-if="detalleMembresiaDisplay.showVence && detalleMembresiaDisplay.fechaVence" class="mt-2">
-                    <strong>Próxima fecha de vencimiento:</strong> {{ formatFecha(detalleMembresiaDisplay.fechaVence) }}
-                  </div>
-                </div>
-                <p v-else class="text-muted">{{ detalleMembresiaDisplay.label }}</p>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button @click="editarCliente(clienteDetalle!)" class="btn btn-sm btn-outline-primary me-1">
-                <i class="fa-solid fa-edit me-1"></i>
-                Editar Cliente
-              </button>
-              <button v-if="isSuperadmin" @click="eliminarCliente(clienteDetalle!)"
-                class="btn btn-sm btn-outline-danger me-1">
-                <i class="fa-solid fa-trash me-1"></i>
-                Eliminar Cliente
-              </button>
-              <button type="button" class="btn btn-secondary" @click="showDetalleModal = false">Cerrar</button>
+            <div class="col-md-6">
+              <h6>Contacto</h6>
+              <p>
+                <i class="fa-solid fa-phone me-1"></i>
+                <strong>Teléfono:</strong> {{ clienteDetalle.telefono }}
+              </p>
+              <p v-if="clienteDetalle.whatsapp">
+                <i class="fa-brands fa-whatsapp me-1 text-success"></i>
+                <strong>WhatsApp:</strong> {{ clienteDetalle.whatsapp }}
+              </p>
+              <p v-if="clienteDetalle.direccion">
+                <i class="fa-solid fa-map-marker-alt me-1"></i>
+                <strong>Dirección:</strong> {{ clienteDetalle.direccion }}
+              </p>
             </div>
           </div>
+          <hr>
+          <h6>Membresías</h6>
+          <div v-if="detalleMembresiaDisplay.badgeClass !== 'text-muted'">
+            <span :class="['badge me-1', detalleMembresiaDisplay.badgeClass]">{{ detalleMembresiaDisplay.label }}</span>
+            <span v-if="detalleMembresiaDisplay.subLabel" :class="['badge me-1', detalleMembresiaDisplay.subLabel === 'Por vencer' ? 'bg-warning text-dark' : 'bg-danger']">
+              {{ detalleMembresiaDisplay.subLabel }}
+            </span>
+            <div v-if="detalleMembresiaDisplay.showVence && detalleMembresiaDisplay.fechaVence" class="mt-2">
+              <strong>Próxima fecha de vencimiento:</strong> {{ formatFecha(detalleMembresiaDisplay.fechaVence) }}
+            </div>
+          </div>
+          <p v-else class="text-muted">{{ detalleMembresiaDisplay.label }}</p>
         </div>
-      </div>
+        <template #footer>
+          <button @click="editarCliente(clienteDetalle!)" class="btn btn-sm btn-outline-primary me-1">
+            <i class="fa-solid fa-edit me-1"></i>
+            Editar Cliente
+          </button>
+          <button v-if="isSuperadmin" @click="eliminarCliente(clienteDetalle!)" class="btn btn-sm btn-outline-danger me-1">
+            <i class="fa-solid fa-trash me-1"></i>
+            Eliminar Cliente
+          </button>
+          <button type="button" class="btn btn-secondary" @click="showDetalleModal = false">Cerrar</button>
+        </template>
+      </GymModal>
 
       <!-- Modal de cliente (editar/crear) -->
-      <div v-if="showModal" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">{{ clienteEditando ? 'Editar' : 'Nuevo' }} Cliente</h5>
-              <button type="button" class="btn-close" @click="cerrarModal"></button>
-            </div>
-            <div class="modal-body">
-              <form @submit.prevent="guardarCliente">
-                <div class="mb-3">
-                  <label class="form-label">Nombre Completo *</label>
-                  <input v-model="formCliente.nombre_completo" type="text" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Teléfono *</label>
-                  <input v-model="formCliente.telefono" type="tel" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Email</label>
-                  <input v-model="formCliente.email" type="email" class="form-control">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">WhatsApp</label>
-                  <input v-model="formCliente.whatsapp" type="tel" class="form-control">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Dirección</label>
-                  <textarea v-model="formCliente.direccion" class="form-control" rows="2"></textarea>
-                </div>
-                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
-                  <button type="submit" class="btn btn-primary" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                    Guardar
-                  </button>
-                </div>
-              </form>
-            </div>
+      <GymModal v-model:show="showModal" :title="(clienteEditando ? 'Editar' : 'Nuevo') + ' Cliente'">
+        <form id="formCliente" @submit.prevent="guardarCliente">
+          <div class="mb-3">
+            <label class="form-label">Nombre Completo *</label>
+            <input v-model="formCliente.nombre_completo" type="text" class="form-control" required>
           </div>
-        </div>
-      </div>
+          <div class="mb-3">
+            <label class="form-label">Teléfono *</label>
+            <input v-model="formCliente.telefono" type="tel" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input v-model="formCliente.email" type="email" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">WhatsApp</label>
+            <input v-model="formCliente.whatsapp" type="tel" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Dirección</label>
+            <textarea v-model="formCliente.direccion" class="form-control" rows="2"></textarea>
+          </div>
+          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        </form>
+        <template #footer>
+          <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
+          <button type="submit" form="formCliente" class="btn btn-primary" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+            Guardar
+          </button>
+        </template>
+      </GymModal>
     </div>
   </div>
 </template>
@@ -141,6 +120,7 @@ import { useAuth } from '@/composables/useAuth';
 import { useClientes } from '@/composables/useClientes';
 import type { ClienteConMembresias } from '@/composables/useClientes';
 import type { Cliente, ClienteForm } from '@/types/gym';
+import GymModal from '@/components/GymModal.vue';
 import FiltrosClientes from '@/components/clientes/FiltrosClientes.vue';
 import TablaClientes from '@/components/clientes/TablaClientes.vue';
 import TablaClientesMobile from '@/components/clientes/TablaClientesMobile.vue';
