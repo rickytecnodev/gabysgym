@@ -1,30 +1,21 @@
 <template>
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-4" v-if="isSuperadmin">
-          <label class="form-label">Sucursal</label>
-          <select 
-            :value="filtroSucursal === null ? '' : filtroSucursal" 
-            @change="$emit('update:filtroSucursal', ($event.target as HTMLSelectElement).value === '' ? null : Number(($event.target as HTMLSelectElement).value))" 
-            class="form-select"
-          >
-            <option value="">Todas</option>
-            <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-              {{ sucursal.nombre }}
-            </option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Buscar</label>
-          <input 
-            :value="busqueda" 
-            @input="$emit('update:busqueda', ($event.target as HTMLInputElement).value)" 
-            type="text" 
-            class="form-control" 
-            placeholder="Nombre, teléfono o email..."
-          >
-        </div>
+  <div class="p-3 rounded-3 border mb-2 bg-white">
+    <div class="row gy-2">
+      <div class="col-md-4" v-if="isSuperadmin">
+        <label class="form-label">Sucursal</label>
+        <select :value="filtroSucursal === null ? '' : filtroSucursal"
+          @change="$emit('update:filtroSucursal', ($event.target as HTMLSelectElement).value === '' ? null : Number(($event.target as HTMLSelectElement).value))"
+          class="form-select">
+          <option value="">Todas</option>
+          <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
+            {{ sucursal.nombre }}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Buscar</label>
+        <input :value="busqueda" @input="$emit('update:busqueda', ($event.target as HTMLInputElement).value)"
+          type="text" class="form-control" placeholder="Nombre, teléfono o email...">
       </div>
     </div>
   </div>

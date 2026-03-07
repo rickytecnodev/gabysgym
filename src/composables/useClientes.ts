@@ -3,9 +3,13 @@ import { fetchClientes, createCliente, updateCliente, deleteCliente, fetchSucurs
 import type { Cliente, ClienteForm, Sucursal } from '@/types/gym';
 import Swal from 'sweetalert2';
 
-interface ClienteConMembresias extends Cliente {
+export type EstadoMembresiaDisplay = 'activa' | 'vencida' | 'cancelada' | null;
+
+export interface ClienteConMembresias extends Cliente {
   membresias_activas?: number;
   fecha_vencimiento_activa?: string | null;
+  /** Estado para mostrar: activa (tiene al menos una activa), vencida (solo vencidas), cancelada (solo canceladas), null (sin membresías) */
+  estado_membresia_display?: EstadoMembresiaDisplay;
 }
 
 export function useClientes() {
@@ -26,22 +30,31 @@ export function useClientes() {
       
       if (data) {
         const { data: membresias } = await fetchMembresias(sucursalId);
-        
+
         clientes.value = data.map(cliente => {
-          const membresiasDelCliente = membresias?.filter(m => 
-            m.cliente_id === cliente.id && m.estado === 'activa'
-          ) || [];
-          
-          const membresiaActiva = membresiasDelCliente.length > 0 
-            ? membresiasDelCliente.sort((a, b) => 
-                new Date(b.fecha_vencimiento).getTime() - new Date(a.fecha_vencimiento).getTime()
-              )[0]
-            : null;
-          
+          const todas = membresias?.filter(m => m.cliente_id === cliente.id) || [];
+          const activas = todas.filter(m => m.estado === 'activa');
+          const vencidas = todas.filter(m => m.estado === 'vencida');
+          const canceladas = todas.filter(m => m.estado === 'cancelada');
+
+          const membresiaActiva =
+            activas.length > 0
+              ? activas.sort(
+                  (a, b) =>
+                    new Date(b.fecha_vencimiento).getTime() - new Date(a.fecha_vencimiento).getTime()
+                )[0]
+              : null;
+
+          let estado_membresia_display: EstadoMembresiaDisplay = null;
+          if (activas.length > 0) estado_membresia_display = 'activa';
+          else if (vencidas.length > 0) estado_membresia_display = 'vencida';
+          else if (canceladas.length > 0) estado_membresia_display = 'cancelada';
+
           return {
             ...cliente,
-            membresias_activas: membresiasDelCliente.length,
-            fecha_vencimiento_activa: membresiaActiva?.fecha_vencimiento || null
+            membresias_activas: activas.length,
+            fecha_vencimiento_activa: membresiaActiva?.fecha_vencimiento || null,
+            estado_membresia_display
           };
         });
       }

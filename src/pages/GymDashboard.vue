@@ -22,7 +22,8 @@
       </div>
 
       <!-- Selector de sucursal (solo para superadmin) -->
-      <div v-if="isSuperadmin" class="card mb-4">
+
+      <div v-if="isSuperadmin" class="card mb-2">
         <div class="card-body">
           <div class="row align-items-end">
             <div class="col-md-4">
@@ -38,9 +39,9 @@
         </div>
       </div>
 
-      <!-- Estadísticas rápidas -->
-      <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
+
+      <div class="row gx-3 mb-2">
+        <div class="col-6">
           <div @click="stats.ventasHoy > 0 ? navegarAVentas('hoy') : null"
             :class="['card border-0 shadow-sm h-100', stats.ventasHoy > 0 ? 'hover-card' : 'opacity-50']"
             :style="stats.ventasHoy > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
@@ -57,7 +58,7 @@
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6">
           <div @click="stats.ventasPendientes > 0 ? navegarAVentas('hoy', 'pendiente') : null"
             :class="['card border-0 shadow-sm h-100', stats.ventasPendientes > 0 ? 'hover-card' : 'opacity-50']"
             :style="stats.ventasPendientes > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
@@ -74,7 +75,7 @@
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6">
           <div @click="stats.membresiasActivas > 0 ? navegarAMembresias({ estado: 'activa' }) : null"
             :class="['card border-0 shadow-sm h-100', stats.membresiasActivas > 0 ? 'hover-card' : 'opacity-50']"
             :style="stats.membresiasActivas > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
@@ -91,7 +92,7 @@
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6">
           <div @click="stats.membresiasPorVencer > 0 ? navegarAMembresiasPorVencer() : null"
             :class="['card border-0 shadow-sm h-100', stats.membresiasPorVencer > 0 ? 'hover-card' : 'opacity-50']"
             :style="stats.membresiasPorVencer > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
@@ -108,9 +109,7 @@
             </div>
           </div>
         </div>
-      </div>
-      <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
+        <div class="col-6">
           <div @click="stats.membresiasVencidas > 0 ? navegarAMembresias({ estado: 'vencida' }) : null"
             :class="['card border-0 shadow-sm h-100', stats.membresiasVencidas > 0 ? 'hover-card' : 'opacity-50']"
             :style="stats.membresiasVencidas > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
@@ -127,7 +126,7 @@
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
@@ -142,7 +141,7 @@
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6">
           <div @click="stats.bitacorasHoy > 0 ? navegarABitacoras() : null"
             :class="['card border-0 shadow-sm h-100', stats.bitacorasHoy > 0 ? 'hover-card' : 'opacity-50']"
             :style="stats.bitacorasHoy > 0 ? 'cursor: pointer;' : 'cursor: not-allowed;'">
@@ -158,87 +157,6 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Navegación rápida -->
-      <div class="row g-3">
-        <div class="col-md-3">
-          <router-link to="/gym/productos" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body text-center">
-                <i class="fa-solid fa-box fa-3x text-primary mb-3"></i>
-                <h5>Productos</h5>
-                <p class="text-muted mb-0">Gestionar inventario</p>
-              </div>
-            </div>
-          </router-link>
-        </div>
-        <div class="col-md-3">
-          <router-link to="/gym/ventas" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body text-center">
-                <i class="fa-solid fa-cash-register fa-3x text-success mb-3"></i>
-                <h5>Ventas</h5>
-                <p class="text-muted mb-0">Registrar y gestionar ventas</p>
-              </div>
-            </div>
-          </router-link>
-        </div>
-        <div class="col-md-3">
-          <router-link to="/gym/membresias" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body text-center">
-                <i class="fa-solid fa-id-card fa-3x text-info mb-3"></i>
-                <h5>Membresías</h5>
-                <p class="text-muted mb-0">Gestionar membresías</p>
-              </div>
-            </div>
-          </router-link>
-        </div>
-        <div class="col-md-3">
-          <router-link to="/gym/clientes" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body text-center">
-                <i class="fa-solid fa-user-group fa-3x text-info mb-3"></i>
-                <h5>Clientes</h5>
-                <p class="text-muted mb-0">Gestionar clientes</p>
-              </div>
-            </div>
-          </router-link>
-        </div>
-        <div class="col-md-3">
-          <router-link to="/gym/reportes" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body text-center">
-                <i class="fa-solid fa-chart-bar fa-3x text-warning mb-3"></i>
-                <h5>Reportes</h5>
-                <p class="text-muted mb-0">Ver reportes y estadísticas</p>
-              </div>
-            </div>
-          </router-link>
-        </div>
-        <div class="col-md-3">
-          <router-link to="/gym/bitacoras" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body text-center">
-                <i class="fa-solid fa-book fa-3x text-info mb-3"></i>
-                <h5>Bitácoras</h5>
-                <p class="text-muted mb-0">Bitácora del día</p>
-              </div>
-            </div>
-          </router-link>
-        </div>
-        <div class="col-md-3" v-if="isSuperadmin">
-          <router-link to="/gym/usuarios" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body text-center">
-                <i class="fa-solid fa-user-gear fa-3x text-primary mb-3"></i>
-                <h5>Usuarios</h5>
-                <p class="text-muted mb-0">Gestionar usuarios</p>
-              </div>
-            </div>
-          </router-link>
         </div>
       </div>
 
@@ -501,5 +419,9 @@ const loadStats = async () => {
 .hover-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-body {
+  padding: 0.75rem;
 }
 </style>

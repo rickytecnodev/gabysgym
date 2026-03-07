@@ -43,7 +43,7 @@ const showBar = computed(() => route.name !== 'GymLogin');
     left: 0;
     right: 0;
     z-index: 1020;
-    background-color: #224a9d;
+    background-color: #ffffff;
     box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
     padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -62,7 +62,7 @@ const showBar = computed(() => route.name !== 'GymLogin');
     align-items: center;
     justify-content: center;
     padding: 0.35rem 0.5rem;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(0, 0, 0, 0.75);
     text-decoration: none;
     font-size: 0.65rem;
     font-weight: 500;
@@ -83,7 +83,6 @@ const showBar = computed(() => route.name !== 'GymLogin');
 }
 
 .gym-btn-down-item.active {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.2);
+    color: rgba(34, 74, 157, 0.98);
 }
 </style>

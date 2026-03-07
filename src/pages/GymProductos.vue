@@ -1,21 +1,13 @@
 <template>
   <div class="bg-light min-vh-100">
-    <div class="container-fluid py-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="container-fluid py-2">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">Productos</h1>
-        <button 
-          v-if="tabActivo === 'productos'"
-          @click="showModal = true" 
-          class="btn btn-primary"
-        >
+        <button v-if="tabActivo === 'productos'" @click="showModal = true" class="btn btn-primary">
           <i class="fa-solid fa-plus me-1"></i>
           Nuevo Producto
         </button>
-        <button 
-          v-else
-          @click="showModalTipoMembresia = true" 
-          class="btn btn-primary"
-        >
+        <button v-else @click="showModalTipoMembresia = true" class="btn btn-primary">
           <i class="fa-solid fa-plus me-1"></i>
           Nuevo Tipo de Membresía
         </button>
@@ -25,57 +17,32 @@
       <TabsProductos :tab-activo="tabActivo" @cambiar-tab="tabActivo = $event">
         <template #productos>
           <!-- Filtros -->
-          <FiltrosProductos
-            v-model:filtro-sucursal="filtroSucursal"
-            v-model:filtro-categoria="filtroCategoria"
-            v-model:filtro-estado="filtroEstado"
-            :sucursales="sucursales"
-            :is-superadmin="isSuperadmin"
-          />
+          <FiltrosProductos v-model:filtro-sucursal="filtroSucursal" v-model:filtro-categoria="filtroCategoria"
+            v-model:filtro-estado="filtroEstado" :sucursales="sucursales" :is-superadmin="isSuperadmin" />
 
           <!-- Tabla de productos (Desktop) -->
           <div class="d-none d-md-block">
-            <TablaProductos
-              :productos="productosFiltrados"
-              :is-superadmin="isSuperadmin"
-              :loading="loadingData"
-              @editar="editarProducto"
-              @eliminar="eliminarProducto"
-            />
+            <TablaProductos :productos="productosFiltrados" :is-superadmin="isSuperadmin" :loading="loadingData"
+              @editar="editarProducto" @eliminar="eliminarProducto" />
           </div>
 
           <!-- Vista móvil de productos (Mobile) -->
           <div class="d-block d-md-none">
-            <TablaProductosMobile
-              :productos="productosFiltrados"
-              :is-superadmin="isSuperadmin"
-              :loading="loadingData"
-              @editar="editarProducto"
-              @eliminar="eliminarProducto"
-            />
+            <TablaProductosMobile :productos="productosFiltrados" :is-superadmin="isSuperadmin" :loading="loadingData"
+              @editar="editarProducto" @eliminar="eliminarProducto" />
           </div>
         </template>
         <template #tipos-membresias>
           <!-- Tabla de tipos de membresías (Desktop) -->
           <div class="d-none d-md-block">
-            <TablaTiposMembresia
-              :tipos-membresia="tiposMembresia"
-              :is-superadmin="isSuperadmin"
-              :loading="loadingTiposMembresia"
-              @editar="editarTipoMembresia"
-              @eliminar="eliminarTipoMembresia"
-            />
+            <TablaTiposMembresia :tipos-membresia="tiposMembresia" :is-superadmin="isSuperadmin"
+              :loading="loadingTiposMembresia" @editar="editarTipoMembresia" @eliminar="eliminarTipoMembresia" />
           </div>
 
           <!-- Vista móvil de tipos de membresías (Mobile) -->
           <div class="d-block d-md-none">
-            <TablaTiposMembresiaMobile
-              :tipos-membresia="tiposMembresia"
-              :is-superadmin="isSuperadmin"
-              :loading="loadingTiposMembresia"
-              @editar="editarTipoMembresia"
-              @eliminar="eliminarTipoMembresia"
-            />
+            <TablaTiposMembresiaMobile :tipos-membresia="tiposMembresia" :is-superadmin="isSuperadmin"
+              :loading="loadingTiposMembresia" @editar="editarTipoMembresia" @eliminar="eliminarTipoMembresia" />
           </div>
         </template>
       </TabsProductos>
@@ -152,7 +119,8 @@
       </div>
 
       <!-- Modal de tipo de membresía -->
-      <div v-if="showModalTipoMembresia" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+      <div v-if="showModalTipoMembresia" class="modal show d-block" tabindex="-1"
+        style="background-color: rgba(0,0,0,0.5)">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -172,7 +140,8 @@
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Precio Mensual *</label>
-                    <input v-model.number="formTipoMembresia.precio_mensual" type="number" step="0.01" class="form-control" required>
+                    <input v-model.number="formTipoMembresia.precio_mensual" type="number" step="0.01"
+                      class="form-control" required>
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Duración (días) *</label>
@@ -207,11 +176,11 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useProductos } from '@/composables/useProductos';
-import { 
-  fetchTiposMembresia, 
-  createTipoMembresia, 
-  updateTipoMembresia, 
-  deleteTipoMembresia 
+import {
+  fetchTiposMembresia,
+  createTipoMembresia,
+  updateTipoMembresia,
+  deleteTipoMembresia
 } from '@/services/gymApi';
 import type { Producto, ProductoForm, TipoMembresia } from '@/types/gym';
 import FiltrosProductos from '@/components/productos/FiltrosProductos.vue';
@@ -298,10 +267,10 @@ onMounted(async () => {
 });
 
 const loadProductos = async () => {
-  const sucursalId = isSuperadmin.value 
-    ? (filtroSucursal.value || null) 
+  const sucursalId = isSuperadmin.value
+    ? (filtroSucursal.value || null)
     : currentSucursalId.value;
-  
+
   await loadProductosFromComposable(sucursalId);
 };
 
@@ -354,10 +323,10 @@ const guardarProducto = async () => {
   loading.value = true;
   errorMessage.value = '';
 
-  const sucursalId = isSuperadmin.value 
-    ? sucursalSeleccionada.value! 
+  const sucursalId = isSuperadmin.value
+    ? sucursalSeleccionada.value!
     : currentSucursalId.value!;
-  
+
   const result = await guardarProductoFromComposable(
     formProducto.value,
     sucursalId,
@@ -374,7 +343,7 @@ const guardarProducto = async () => {
     cerrarModal();
     await loadProductos();
   }
-  
+
   loading.value = false;
 };
 
@@ -459,7 +428,7 @@ const eliminarTipoMembresia = async (id: number) => {
     Swal.fire('Error', 'Solo el superadmin puede eliminar tipos de membresías', 'error');
     return;
   }
-  
+
   const result = await Swal.fire({
     title: '¿Estás seguro?',
     text: 'Esta acción no se puede deshacer',
@@ -482,4 +451,3 @@ const eliminarTipoMembresia = async (id: number) => {
   }
 };
 </script>
-

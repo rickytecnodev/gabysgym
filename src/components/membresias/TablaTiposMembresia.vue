@@ -1,6 +1,5 @@
 <template>
-  <div class="card">
-    <div class="card-body">
+  <div class="p-3 rounded-3 border bg-white">
       <div class="table-responsive">
         <table class="table table-hover">
           <thead>
@@ -28,11 +27,7 @@
                 <button @click="$emit('editar', tipo)" class="btn btn-sm btn-outline-primary me-1">
                   <i class="fa-solid fa-edit"></i>
                 </button>
-                <button 
-                  v-if="isSuperadmin"
-                  @click="$emit('eliminar', tipo.id)" 
-                  class="btn btn-sm btn-outline-danger"
-                >
+                <button v-if="isSuperadmin" @click="$emit('eliminar', tipo.id)" class="btn btn-sm btn-outline-danger">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </td>
@@ -51,7 +46,6 @@
           </tbody>
         </table>
       </div>
-    </div>
   </div>
 </template>
 

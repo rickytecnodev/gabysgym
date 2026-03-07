@@ -1,7 +1,7 @@
 <template>
   <div class="bg-light min-vh-100">
-    <div class="container-fluid py-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="container-fluid py-2">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">Clientes</h1>
         <button @click="abrirModalNuevo" class="btn btn-primary">
           <i class="fa-solid fa-plus me-1"></i>
@@ -10,35 +10,19 @@
       </div>
 
       <!-- Filtros -->
-      <FiltrosClientes
-        v-model:filtro-sucursal="filtroSucursal"
-        v-model:busqueda="busqueda"
-        :sucursales="sucursales"
-        :is-superadmin="isSuperadmin"
-      />
+      <FiltrosClientes v-model:filtro-sucursal="filtroSucursal" v-model:busqueda="busqueda" :sucursales="sucursales"
+        :is-superadmin="isSuperadmin" />
 
       <!-- Tabla de clientes (Desktop) -->
       <div class="d-none d-md-block">
-        <TablaClientes
-          :clientes="clientesFiltrados"
-          :is-superadmin="isSuperadmin"
-          :loading="loadingDataClientes"
-          @ver-detalle="verDetalleCliente"
-          @editar="editarCliente"
-          @eliminar="eliminarCliente"
-        />
+        <TablaClientes :clientes="clientesFiltrados" :is-superadmin="isSuperadmin" :loading="loadingDataClientes"
+          @ver-detalle="verDetalleCliente" @editar="editarCliente" @eliminar="eliminarCliente" />
       </div>
 
       <!-- Vista móvil de clientes (Mobile) -->
       <div class="d-block d-md-none">
-        <TablaClientesMobile
-          :clientes="clientesFiltrados"
-          :is-superadmin="isSuperadmin"
-          :loading="loadingDataClientes"
-          @ver-detalle="verDetalleCliente"
-          @editar="editarCliente"
-          @eliminar="eliminarCliente"
-        />
+        <TablaClientesMobile :clientes="clientesFiltrados" :is-superadmin="isSuperadmin" :loading="loadingDataClientes"
+          @ver-detalle="verDetalleCliente" @editar="editarCliente" @eliminar="eliminarCliente" />
       </div>
 
       <!-- Modal de detalle de cliente -->
@@ -76,15 +60,16 @@
                 </div>
                 <hr>
                 <h6>Membresías</h6>
-                <div v-if="(clienteDetalle as any).membresias_activas && (clienteDetalle as any).membresias_activas > 0">
-                  <span class="badge bg-success me-1">
-                    {{ (clienteDetalle as any).membresias_activas }} activa(s)
+                <div v-if="detalleMembresiaDisplay.badgeClass !== 'text-muted'">
+                  <span :class="['badge me-1', detalleMembresiaDisplay.badgeClass]">{{ detalleMembresiaDisplay.label }}</span>
+                  <span v-if="detalleMembresiaDisplay.subLabel" :class="['badge me-1', detalleMembresiaDisplay.subLabel === 'Por vencer' ? 'bg-warning text-dark' : 'bg-danger']">
+                    {{ detalleMembresiaDisplay.subLabel }}
                   </span>
-                  <div v-if="(clienteDetalle as any).fecha_vencimiento_activa" class="mt-2">
-                    <strong>Próxima fecha de vencimiento:</strong> {{ formatFecha((clienteDetalle as any).fecha_vencimiento_activa) }}
+                  <div v-if="detalleMembresiaDisplay.showVence && detalleMembresiaDisplay.fechaVence" class="mt-2">
+                    <strong>Próxima fecha de vencimiento:</strong> {{ formatFecha(detalleMembresiaDisplay.fechaVence) }}
                   </div>
                 </div>
-                <p v-else class="text-muted">Sin membresías activas</p>
+                <p v-else class="text-muted">{{ detalleMembresiaDisplay.label }}</p>
               </div>
             </div>
             <div class="modal-footer">
@@ -92,11 +77,8 @@
                 <i class="fa-solid fa-edit me-1"></i>
                 Editar Cliente
               </button>
-              <button 
-                v-if="isSuperadmin"
-                @click="eliminarCliente(clienteDetalle!)" 
-                class="btn btn-sm btn-outline-danger me-1"
-              >
+              <button v-if="isSuperadmin" @click="eliminarCliente(clienteDetalle!)"
+                class="btn btn-sm btn-outline-danger me-1">
                 <i class="fa-solid fa-trash me-1"></i>
                 Eliminar Cliente
               </button>
@@ -157,6 +139,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useClientes } from '@/composables/useClientes';
+import type { ClienteConMembresias } from '@/composables/useClientes';
 import type { Cliente, ClienteForm } from '@/types/gym';
 import FiltrosClientes from '@/components/clientes/FiltrosClientes.vue';
 import TablaClientes from '@/components/clientes/TablaClientes.vue';
@@ -178,7 +161,7 @@ const {
 const showModal = ref(false);
 const showDetalleModal = ref(false);
 const clienteEditando = ref<Cliente | null>(null);
-const clienteDetalle = ref<Cliente | null>(null);
+const clienteDetalle = ref<ClienteConMembresias | null>(null);
 const loading = ref(false);
 const errorMessage = ref('');
 const busqueda = ref('');
@@ -194,20 +177,63 @@ const formCliente = ref<ClienteForm>({
 
 const clientesFiltrados = computed(() => {
   let filtrados = clientes.value;
-  
+
   // Filtrar por búsqueda
   if (busqueda.value) {
     const busquedaLower = busqueda.value.toLowerCase();
-    filtrados = filtrados.filter(c => 
+    filtrados = filtrados.filter(c =>
       c.nombre_completo?.toLowerCase().includes(busquedaLower) ||
       c.telefono?.includes(busqueda.value) ||
       c.email?.toLowerCase().includes(busquedaLower) ||
       c.whatsapp?.includes(busqueda.value)
     );
   }
-  
+
   return filtrados;
 });
+
+function normalizarFecha(fecha: unknown): string | null {
+  if (!fecha) return null;
+  try {
+    if (typeof fecha === 'string') {
+      const s = fecha.trim();
+      if (s.includes('T')) return s.split('T')[0];
+      if (s.includes(' ')) return s.split(' ')[0];
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    }
+    const d = new Date(fecha as string);
+    if (!isNaN(d.getTime())) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+  } catch (_) {}
+  return null;
+}
+
+function getMembresiaDisplay(cliente: ClienteConMembresias | null): { label: string; badgeClass: string; subLabel?: string; showVence?: boolean; fechaVence?: string | null } {
+  if (!cliente) return { label: 'Sin membresías', badgeClass: 'text-muted' };
+  const estado = cliente.estado_membresia_display ?? null;
+  if (estado === null) return { label: 'Sin membresías', badgeClass: 'text-muted' };
+  if (estado === 'cancelada') return { label: 'Cancelada', badgeClass: 'bg-secondary' };
+  if (estado === 'vencida') return { label: 'Vencida', badgeClass: 'bg-danger' };
+  const n = cliente.membresias_activas ?? 0;
+  const f = normalizarFecha(cliente.fecha_vencimiento_activa);
+  let subLabel: string | undefined;
+  if (f) {
+    const hoy = new Date().toISOString().split('T')[0];
+    const dias = Math.floor((new Date(f + 'T00:00:00').getTime() - new Date(hoy + 'T00:00:00').getTime()) / (1000 * 60 * 60 * 24));
+    if (dias < 0) subLabel = 'Vencida';
+    else if (dias <= 7) subLabel = 'Por vencer';
+  }
+  return {
+    label: n > 0 ? `${n} activa(s)` : 'Activa',
+    badgeClass: 'bg-success',
+    subLabel,
+    showVence: !!f,
+    fechaVence: cliente.fecha_vencimiento_activa ?? null
+  };
+}
+
+const detalleMembresiaDisplay = computed(() => getMembresiaDisplay(clienteDetalle.value));
 
 watch(filtroSucursal, () => {
   loadClientes();
@@ -297,7 +323,7 @@ const guardarCliente = async () => {
     cerrarModal();
     await loadClientes();
   }
-  
+
   loading.value = false;
 };
 
@@ -306,7 +332,7 @@ const eliminarCliente = async (cliente: Cliente) => {
     Swal.fire('Error', 'Solo el superadmin puede eliminar clientes', 'error');
     return;
   }
-  
+
   const result = await eliminarClienteFromComposable(cliente);
   if (result?.success) {
     if (showDetalleModal.value && clienteDetalle.value?.id === cliente.id) {

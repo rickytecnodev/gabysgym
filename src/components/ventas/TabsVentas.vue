@@ -1,40 +1,27 @@
 <template>
-  <div class="card">
-    <div class="card-body">
-      <!-- Tabs -->
-      <ul class="nav nav-tabs mb-3" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button 
-            class="nav-link" 
-            :class="{ active: tabActivo === 'productos' }"
-            @click="$emit('cambiar-tab', 'productos')"
-            type="button"
-          >
-            Productos
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button 
-            class="nav-link" 
-            :class="{ active: tabActivo === 'membresias' }"
-            @click="$emit('cambiar-tab', 'membresias')"
-            type="button"
-          >
-            Membresías
-          </button>
-        </li>
-      </ul>
+  <div class="d-flex flex-wrap gap-2 mb-3 px-1 py-1" role="group" aria-label="Tipo de ventas">
+    <button type="button"
+      :class="['btn btn-sm rounded-pill px-4 py-2', tabActivo === 'productos' ? 'btn-primary' : 'btn-outline-secondary']"
+      @click="$emit('cambiar-tab', 'productos')">
+      <i class="fa-solid fa-box me-1"></i>
+      Productos
+    </button>
+    <button type="button"
+      :class="['btn btn-sm rounded-pill px-4 py-2', tabActivo === 'membresias' ? 'btn-primary' : 'btn-outline-secondary']"
+      @click="$emit('cambiar-tab', 'membresias')">
+      <i class="fa-solid fa-id-card me-1"></i>
+      Membresías
+    </button>
+  </div>
 
-      <!-- Tab: Productos -->
-      <div v-show="tabActivo === 'productos'" class="tab-content">
-        <slot name="productos" />
-      </div>
+  <!-- Contenido: Productos -->
+  <div v-show="tabActivo === 'productos'" class="tab-content">
+    <slot name="productos" />
+  </div>
 
-      <!-- Tab: Membresías -->
-      <div v-show="tabActivo === 'membresias'" class="tab-content">
-        <slot name="membresias" />
-      </div>
-    </div>
+  <!-- Contenido: Membresías -->
+  <div v-show="tabActivo === 'membresias'" class="tab-content">
+    <slot name="membresias" />
   </div>
 </template>
 

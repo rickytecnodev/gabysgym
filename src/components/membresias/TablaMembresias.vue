@@ -1,8 +1,7 @@
 <template>
-  <div class="card">
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover">
+  <div class="p-3 rounded-3 border bg-white">
+    <div class="table-responsive">
+      <table class="table table-hover">
           <thead>
             <tr>
               <th>Cliente</th>
@@ -121,7 +120,6 @@
             </tr>
           </tbody>
         </table>
-      </div>
     </div>
   </div>
 </template>

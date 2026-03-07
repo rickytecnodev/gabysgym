@@ -8,107 +8,75 @@
     <div v-else-if="membresias.length === 0" class="text-center text-muted py-4">
       No hay membresías
     </div>
-    <div v-else class="row g-3">
-      <div v-for="membresia in membresias" :key="membresia.id" class="col-12">
-        <div 
-          class="card h-100 shadow-sm" 
-          :class="getCardClass(membresia)"
-          @click="$emit('ver-detalle', membresia)"
-          style="cursor: pointer;"
-        >
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <div class="flex-grow-1">
-                <h6 class="card-title mb-1 fw-bold">{{ membresia.cliente?.nombre_completo }}</h6>
-                <small class="text-muted" v-if="membresia.cliente?.telefono">
-                  <i class="fa-solid fa-phone me-1"></i>
-                  {{ membresia.cliente.telefono }}
-                </small>
-              </div>
+    <div v-else class="gy-2">
+      <div v-for="membresia in membresias" :key="membresia.id" @click="$emit('ver-detalle', membresia)">
+        <div :class="['p-3 rounded-3 border bg-white mb-2 shadow borde-izq-tarjeta', getCardClass(membresia)]" style="cursor: pointer;">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+              <h6 class="card-title mb-1 fw-bold">{{ membresia.cliente?.nombre_completo }}</h6>
+              <span class="small text-muted" v-if="membresia.cliente?.telefono">
+                <i class="fa-solid fa-phone me-1"></i>
+                {{ membresia.cliente.telefono }}
+              </span>
+            </div>
+            <div class="d-flex">
               <span :class="getEstadoBadgeClass(membresia.estado)" class="badge">
                 {{ membresia.estado }}
               </span>
             </div>
-            
-            <div class="mb-2">
-              <div class="d-flex align-items-center mb-1">
-                <i class="fa-solid fa-tag me-2 text-muted"></i>
-                <span class="small">
-                  {{ membresia.tipo_membresia?.nombre || 'Personalizada' }}
-                  <span v-if="!membresia.tipo_membresia" class="badge bg-info ms-1">Promo</span>
-                </span>
-              </div>
-              <div class="small text-muted mb-1">
-                <i class="fa-solid fa-calendar-check me-2"></i>
-                Inicio: {{ formatFecha(membresia.fecha_inicio) }}
-              </div>
-              <div class="small" :class="getVencimientoClass(membresia.fecha_vencimiento)">
-                <i class="fa-solid fa-calendar-times me-2"></i>
-                Vence: {{ formatFecha(membresia.fecha_vencimiento) }}
-              </div>
-              <div v-if="isSuperadmin && !filtroSucursal && membresia.sucursal" class="small text-muted mt-1">
-                <i class="fa-solid fa-building me-2"></i>
-                {{ (membresia.sucursal as any)?.nombre }}
+          </div>
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+              <div class="small text-muted">Tipo</div>
+              <div class="fw-bold">
+                {{ membresia.tipo_membresia?.nombre || 'Personalizada' }}
+                <span v-if="!membresia.tipo_membresia" class="badge bg-info ms-1">Promo</span>
               </div>
             </div>
-            
-            <div class="d-flex flex-wrap gap-1 mt-2 pt-2 border-top" @click.stop>
-              <button 
-                @click.stop="$emit('registrar-pago', membresia)" 
-                class="btn btn-sm btn-outline-success"
-                :disabled="membresia.estado === 'cancelada'"
-                title="Registrar pago"
-              >
+            <div class="text-end">
+              <div class="small text-muted">Vence</div>
+              <div class="fw-bold" :class="getVencimientoClass(membresia.fecha_vencimiento)">
+                {{ formatFecha(membresia.fecha_vencimiento) }}
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center flex-wrap gap-1"
+            @click.stop>
+            <div class="d-flex flex-wrap gap-1">
+              <button @click.stop="$emit('registrar-pago', membresia)" class="btn btn-sm btn-outline-success"
+                :disabled="membresia.estado === 'cancelada'" title="Registrar pago">
                 <i class="fa-solid fa-money-bill-wave"></i>
               </button>
-              <button 
-                @click.stop="$emit('enviar-recordatorio', membresia)" 
-                class="btn btn-sm btn-outline-success"
+              <button @click.stop="$emit('enviar-recordatorio', membresia)" class="btn btn-sm btn-outline-success"
                 :disabled="(membresia.estado !== 'activa' && membresia.estado !== 'vencida') || !membresia.cliente?.whatsapp"
-                title="Enviar recordatorio"
-              >
+                title="Enviar recordatorio">
                 <i class="fa-brands fa-whatsapp"></i>
               </button>
-              <button 
-                v-if="membresia.estado === 'activa' || membresia.estado === 'vencida'"
-                @click.stop="$emit('cancelar', membresia.id)" 
-                class="btn btn-sm btn-outline-danger"
-                title="Cancelar"
-              >
+              <button v-if="membresia.estado === 'activa' || membresia.estado === 'vencida'"
+                @click.stop="$emit('cancelar', membresia.id)" class="btn btn-sm btn-outline-danger" title="Cancelar">
                 <i class="fa-solid fa-ban"></i>
               </button>
-              <button 
-                v-if="membresia.estado === 'cancelada'"
-                @click.stop="$emit('reactivar', membresia)" 
-                class="btn btn-sm btn-outline-success"
-                title="Reactivar"
-              >
+              <button v-if="membresia.estado === 'cancelada'" @click.stop="$emit('reactivar', membresia)"
+                class="btn btn-sm btn-outline-success" title="Reactivar">
                 <i class="fa-solid fa-check-circle"></i>
               </button>
-              <button 
-                @click.stop="$emit('editar-fechas', membresia)" 
-                class="btn btn-sm btn-outline-primary"
-                title="Editar fechas"
-              >
+              <button @click.stop="$emit('editar-fechas', membresia)" class="btn btn-sm btn-outline-primary"
+                title="Editar fechas">
                 <i class="fa-solid fa-calendar-days"></i>
               </button>
-              <button 
-                @click.stop="$emit('editar-cliente', membresia.cliente!)" 
-                class="btn btn-sm btn-outline-primary"
-                title="Editar cliente"
-                :disabled="!membresia.cliente"
-              >
+              <button @click.stop="$emit('editar-cliente', membresia.cliente!)" class="btn btn-sm btn-outline-primary"
+                title="Editar cliente" :disabled="!membresia.cliente">
                 <i class="fa-solid fa-user-edit"></i>
               </button>
-              <button 
-                v-if="isSuperadmin"
-                @click.stop="$emit('eliminar', membresia)" 
-                class="btn btn-sm btn-outline-danger"
-                title="Eliminar"
-              >
+              <button v-if="isSuperadmin" @click.stop="$emit('eliminar', membresia)"
+                class="btn btn-sm btn-outline-danger" title="Eliminar">
                 <i class="fa-solid fa-trash"></i>
               </button>
             </div>
+            <span v-if="isSuperadmin && !filtroSucursal && membresia.sucursal" class="small text-muted">
+              <i class="fa-solid fa-building me-1"></i>
+              {{ (membresia.sucursal as any)?.nombre }}
+            </span>
           </div>
         </div>
       </div>
@@ -183,25 +151,43 @@ const getVencimientoClass = (fechaVencimiento: string) => {
 };
 
 const getCardClass = (membresia: Membresia) => {
-  if (membresia.estado === 'vencida') return 'border-danger';
-  if (membresia.estado === 'cancelada') return 'border-secondary';
+  if (membresia.estado === 'vencida') return 'borde-izq-rojo';
+  if (membresia.estado === 'cancelada') return 'borde-izq-gris';
   const hoyStr = new Date().toISOString().split('T')[0];
   const fechaVencimientoStr = normalizarFecha(membresia.fecha_vencimiento);
-  if (!fechaVencimientoStr) return '';
+  if (!fechaVencimientoStr) return 'borde-izq-verde';
   const hoyDate = new Date(hoyStr + 'T00:00:00');
   const vencimientoDate = new Date(fechaVencimientoStr + 'T00:00:00');
   const diasRestantes = Math.ceil((vencimientoDate.getTime() - hoyDate.getTime()) / (1000 * 60 * 60 * 24));
-  if (diasRestantes <= 7 && diasRestantes >= 0) return 'border-warning';
-  return '';
+  if (diasRestantes <= 7 && diasRestantes >= 0) return 'borde-izq-amarillo';
+  return 'borde-izq-verde';
 };
 </script>
 
 <style scoped>
-.card {
+.borde-izq-tarjeta {
+  border-left-width: 5px !important;
+  border-left-style: solid !important;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.card:hover {
+.borde-izq-verde {
+  border-left-color: var(--bs-success) !important;
+}
+
+.borde-izq-rojo {
+  border-left-color: var(--bs-danger) !important;
+}
+
+.borde-izq-amarillo {
+  border-left-color: var(--bs-warning) !important;
+}
+
+.borde-izq-gris {
+  border-left-color: var(--bs-secondary) !important;
+}
+
+.borde-izq-tarjeta:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
 }

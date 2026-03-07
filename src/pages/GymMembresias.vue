@@ -1,7 +1,7 @@
 <template>
   <div class="bg-light min-vh-100">
-    <div class="container-fluid py-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="container-fluid py-2">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">Membresías</h1>
         <button @click="showModal = true" class="btn btn-primary">
           <i class="fa-solid fa-plus me-1"></i>
@@ -10,56 +10,30 @@
       </div>
 
       <!-- Filtros -->
-      <FiltrosMembresias
-        v-model:filtro-sucursal="filtroSucursal"
-        v-model:filtro-fecha-desde="filtroFechaDesde"
-        v-model:filtro-fecha-hasta="filtroFechaHasta"
-        v-model:filtro-estado="filtroEstado"
-        :periodo-activo="periodoActivo"
-        :filtro-cliente-id="filtroClienteId"
-        :nombre-cliente="getNombreCliente(filtroClienteId)"
-        :sucursales="sucursales"
-        :is-superadmin="isSuperadmin"
-        @aplicar-periodo="aplicarPeriodo"
-        @limpiar-periodo="limpiarPeriodo"
-        @limpiar-filtro-cliente="limpiarFiltroCliente"
-        @actualizar-estados="actualizarEstados"
-      />
+      <FiltrosMembresias v-model:filtro-sucursal="filtroSucursal" v-model:filtro-fecha-desde="filtroFechaDesde"
+        v-model:filtro-fecha-hasta="filtroFechaHasta" v-model:filtro-estado="filtroEstado"
+        :periodo-activo="periodoActivo" :filtro-cliente-id="filtroClienteId"
+        :nombre-cliente="getNombreCliente(filtroClienteId)" :sucursales="sucursales" :is-superadmin="isSuperadmin"
+        @aplicar-periodo="aplicarPeriodo" @limpiar-periodo="limpiarPeriodo"
+        @limpiar-filtro-cliente="limpiarFiltroCliente" @actualizar-estados="actualizarEstados" />
 
+        
       <!-- Tabla de membresías (Desktop) -->
       <div class="d-none d-md-block">
-        <TablaMembresias
-          :membresias="membresiasFiltradas"
-          :is-superadmin="isSuperadmin"
-          :filtro-sucursal="filtroSucursal"
-          :loading="loadingDataMembresias"
-          @ver-detalle="verDetalle"
-          @registrar-pago="registrarPago"
-          @enviar-recordatorio="enviarRecordatorio"
-          @cancelar="cancelarMembresia"
-          @reactivar="reactivarMembresia"
-          @editar-fechas="editarFechas"
-          @editar-cliente="editarCliente"
-          @eliminar="eliminarMembresia"
-        />
+        <TablaMembresias :membresias="membresiasFiltradas" :is-superadmin="isSuperadmin"
+          :filtro-sucursal="filtroSucursal" :loading="loadingDataMembresias" @ver-detalle="verDetalle"
+          @registrar-pago="registrarPago" @enviar-recordatorio="enviarRecordatorio" @cancelar="cancelarMembresia"
+          @reactivar="reactivarMembresia" @editar-fechas="editarFechas" @editar-cliente="editarCliente"
+          @eliminar="eliminarMembresia" />
       </div>
 
       <!-- Vista móvil de membresías (Mobile) -->
       <div class="d-block d-md-none">
-        <TablaMembresiasMobile
-          :membresias="membresiasFiltradas"
-          :is-superadmin="isSuperadmin"
-          :filtro-sucursal="filtroSucursal"
-          :loading="loadingDataMembresias"
-          @ver-detalle="verDetalle"
-          @registrar-pago="registrarPago"
-          @enviar-recordatorio="enviarRecordatorio"
-          @cancelar="cancelarMembresia"
-          @reactivar="reactivarMembresia"
-          @editar-fechas="editarFechas"
-          @editar-cliente="editarCliente"
-          @eliminar="eliminarMembresia"
-        />
+        <TablaMembresiasMobile :membresias="membresiasFiltradas" :is-superadmin="isSuperadmin"
+          :filtro-sucursal="filtroSucursal" :loading="loadingDataMembresias" @ver-detalle="verDetalle"
+          @registrar-pago="registrarPago" @enviar-recordatorio="enviarRecordatorio" @cancelar="cancelarMembresia"
+          @reactivar="reactivarMembresia" @editar-fechas="editarFechas" @editar-cliente="editarCliente"
+          @eliminar="eliminarMembresia" />
       </div>
 
       <!-- Modal de nueva membresía -->
@@ -93,7 +67,8 @@
 
                 <div class="mb-3">
                   <label class="form-label">Tipo de Membresía *</label>
-                  <select v-model.number="formMembresia.tipo_membresia_id" class="form-select" required @change="onTipoMembresiaChange">
+                  <select v-model.number="formMembresia.tipo_membresia_id" class="form-select" required
+                    @change="onTipoMembresiaChange">
                     <option value="">Selecciona un tipo</option>
                     <option v-for="tipo in tiposMembresia" :key="tipo.id" :value="tipo.id">
                       {{ tipo.nombre }} - ${{ tipo.precio_mensual.toFixed(2) }}/mes
@@ -108,18 +83,14 @@
 
                 <div class="mb-3">
                   <label class="form-label">Fecha de Vencimiento *</label>
-                  <input 
-                    v-model="formMembresia.fecha_vencimiento" 
-                    type="date" 
-                    class="form-control" 
-                    required
-                  >
+                  <input v-model="formMembresia.fecha_vencimiento" type="date" class="form-control" required>
                   <small class="text-muted">Se calcula automáticamente según el tipo, pero puedes editarla</small>
                 </div>
 
                 <div class="mb-3">
                   <label class="form-label">Precio *</label>
-                  <input v-model.number="formMembresia.precio_mensual" type="number" step="0.01" class="form-control" required>
+                  <input v-model.number="formMembresia.precio_mensual" type="number" step="0.01" class="form-control"
+                    required>
                 </div>
 
                 <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
@@ -156,7 +127,7 @@
                     <p><strong>Tipo:</strong> {{ membresiaDetalle.tipo_membresia?.nombre }}</p>
                     <p><strong>Fecha Inicio:</strong> {{ formatFecha(membresiaDetalle.fecha_inicio) }}</p>
                     <p><strong>Fecha Vencimiento:</strong> {{ formatFecha(membresiaDetalle.fecha_vencimiento) }}</p>
-                    <p><strong>Estado:</strong> 
+                    <p><strong>Estado:</strong>
                       <span :class="getEstadoBadgeClass(membresiaDetalle.estado)">
                         {{ membresiaDetalle.estado }}
                       </span>
@@ -189,69 +160,46 @@
                 <div class="mt-3 d-flex flex-wrap gap-2">
                   <!-- Grupo: Acciones (Pagar, WhatsApp, Cancelar/Reactivar) -->
                   <div class="btn-group" role="group">
-                    <button 
-                      @click="registrarPago(membresiaDetalle)" 
-                      class="btn btn-sm btn-outline-success"
+                    <button @click="registrarPago(membresiaDetalle)" class="btn btn-sm btn-outline-success"
                       :disabled="membresiaDetalle?.estado === 'cancelada'"
-                      :title="membresiaDetalle?.estado === 'cancelada' ? 'No se puede pagar una membresía cancelada' : 'Registrar pago'"
-                    >
+                      :title="membresiaDetalle?.estado === 'cancelada' ? 'No se puede pagar una membresía cancelada' : 'Registrar pago'">
                       <i class="fa-solid fa-money-bill-wave me-1"></i>
                       Registrar Pago
                     </button>
-                    <button 
-                      @click="enviarRecordatorio(membresiaDetalle!)" 
-                      class="btn btn-sm btn-outline-success"
+                    <button @click="enviarRecordatorio(membresiaDetalle!)" class="btn btn-sm btn-outline-success"
                       :disabled="(membresiaDetalle?.estado !== 'activa' && membresiaDetalle?.estado !== 'vencida') || !membresiaDetalle?.cliente?.whatsapp"
-                      :title="(membresiaDetalle?.estado !== 'activa' && membresiaDetalle?.estado !== 'vencida') ? 'Solo disponible para membresías activas o vencidas' : !membresiaDetalle?.cliente?.whatsapp ? 'El cliente no tiene WhatsApp' : 'Enviar recordatorio por WhatsApp'"
-                    >
+                      :title="(membresiaDetalle?.estado !== 'activa' && membresiaDetalle?.estado !== 'vencida') ? 'Solo disponible para membresías activas o vencidas' : !membresiaDetalle?.cliente?.whatsapp ? 'El cliente no tiene WhatsApp' : 'Enviar recordatorio por WhatsApp'">
                       <i class="fa-brands fa-whatsapp me-1"></i>
                       Enviar WhatsApp
                     </button>
-                    <button 
-                      v-if="membresiaDetalle?.estado === 'activa' || membresiaDetalle?.estado === 'vencida'"
-                      @click="cancelarMembresia(membresiaDetalle!.id)" 
-                      class="btn btn-sm btn-outline-danger"
-                      title="Cancelar membresía"
-                    >
+                    <button v-if="membresiaDetalle?.estado === 'activa' || membresiaDetalle?.estado === 'vencida'"
+                      @click="cancelarMembresia(membresiaDetalle!.id)" class="btn btn-sm btn-outline-danger"
+                      title="Cancelar membresía">
                       <i class="fa-solid fa-ban me-1"></i>
                       Cancelar
                     </button>
-                    <button 
-                      v-if="membresiaDetalle?.estado === 'cancelada'"
-                      @click="reactivarMembresia(membresiaDetalle)" 
-                      class="btn btn-sm btn-outline-success"
-                      title="Reactivar membresía"
-                    >
+                    <button v-if="membresiaDetalle?.estado === 'cancelada'"
+                      @click="reactivarMembresia(membresiaDetalle)" class="btn btn-sm btn-outline-success"
+                      title="Reactivar membresía">
                       <i class="fa-solid fa-check-circle me-1"></i>
                       Reactivar
                     </button>
                   </div>
-                  
+
                   <!-- Grupo: Edición y Eliminación -->
                   <div class="btn-group" role="group">
-                    <button 
-                      @click="editarFechas(membresiaDetalle)" 
-                      class="btn btn-sm btn-outline-primary"
-                      title="Editar fechas de membresía"
-                    >
+                    <button @click="editarFechas(membresiaDetalle)" class="btn btn-sm btn-outline-primary"
+                      title="Editar fechas de membresía">
                       <i class="fa-solid fa-calendar-days me-1"></i>
                       Editar Fechas
                     </button>
-                    <button 
-                      @click="editarCliente(membresiaDetalle!.cliente!)" 
-                      class="btn btn-sm btn-outline-primary"
-                      title="Editar cliente"
-                      :disabled="!membresiaDetalle?.cliente"
-                    >
+                    <button @click="editarCliente(membresiaDetalle!.cliente!)" class="btn btn-sm btn-outline-primary"
+                      title="Editar cliente" :disabled="!membresiaDetalle?.cliente">
                       <i class="fa-solid fa-user-edit me-1"></i>
                       Editar Cliente
                     </button>
-                    <button 
-                      v-if="isSuperadmin"
-                      @click="eliminarMembresia(membresiaDetalle!)" 
-                      class="btn btn-sm btn-outline-danger"
-                      title="Eliminar membresía"
-                    >
+                    <button v-if="isSuperadmin" @click="eliminarMembresia(membresiaDetalle!)"
+                      class="btn btn-sm btn-outline-danger" title="Eliminar membresía">
                       <i class="fa-solid fa-trash me-1"></i>
                       Eliminar Membresía
                     </button>
@@ -279,20 +227,23 @@
                 <div v-if="membresiaPago" class="mb-3">
                   <div v-if="membresiaPago.estado === 'vencida'" class="alert alert-warning mb-3">
                     <i class="fa-solid fa-exclamation-triangle me-2"></i>
-                    <strong>Membresía Vencida:</strong> Al registrar el pago, la membresía se reactivará automáticamente y se extenderá la fecha de vencimiento.
+                    <strong>Membresía Vencida:</strong> Al registrar el pago, la membresía se reactivará automáticamente
+                    y se extenderá la fecha de vencimiento.
                   </div>
                   <div v-if="membresiaPago.estado === 'cancelada'" class="alert alert-info mb-3">
                     <i class="fa-solid fa-info-circle me-2"></i>
-                    <strong>Membresía Cancelada:</strong> Al registrar el pago, la membresía se reactivará automáticamente y se extenderá la fecha de vencimiento desde hoy.
+                    <strong>Membresía Cancelada:</strong> Al registrar el pago, la membresía se reactivará
+                    automáticamente y se extenderá la fecha de vencimiento desde hoy.
                   </div>
                   <p><strong>Cliente:</strong> {{ membresiaPago.cliente?.nombre_completo }}</p>
                   <p><strong>Tipo:</strong> {{ membresiaPago.tipo_membresia?.nombre }}</p>
-                  <p><strong>Fecha Vencimiento Actual:</strong> 
-                    <span :class="membresiaPago.estado === 'vencida' || membresiaPago.estado === 'cancelada' ? 'text-danger fw-bold' : ''">
+                  <p><strong>Fecha Vencimiento Actual:</strong>
+                    <span
+                      :class="membresiaPago.estado === 'vencida' || membresiaPago.estado === 'cancelada' ? 'text-danger fw-bold' : ''">
                       {{ formatFecha(membresiaPago.fecha_vencimiento) }}
                     </span>
                   </p>
-                  <p><strong>Estado:</strong> 
+                  <p><strong>Estado:</strong>
                     <span :class="getEstadoBadgeClass(membresiaPago.estado)">
                       {{ membresiaPago.estado }}
                     </span>
@@ -304,12 +255,7 @@
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Mes Pagado *</label>
-                  <input 
-                    v-model="formPago.mes_pagado" 
-                    type="month" 
-                    class="form-control" 
-                    required
-                  >
+                  <input v-model="formPago.mes_pagado" type="month" class="form-control" required>
                   <small class="text-muted">Formato: YYYY-MM (ej: 2026-07)</small>
                 </div>
                 <div class="mb-3">
@@ -331,16 +277,13 @@
                 </div>
                 <div class="mb-3">
                   <div class="form-check">
-                    <input 
-                      v-model="extenderVencimiento" 
-                      class="form-check-input" 
-                      type="checkbox" 
+                    <input v-model="extenderVencimiento" class="form-check-input" type="checkbox"
                       id="extenderVencimiento"
-                      :disabled="membresiaPago?.estado === 'vencida' || membresiaPago?.estado === 'cancelada'"
-                    >
+                      :disabled="membresiaPago?.estado === 'vencida' || membresiaPago?.estado === 'cancelada'">
                     <label class="form-check-label" for="extenderVencimiento">
                       <span v-if="membresiaPago?.estado === 'vencida' || membresiaPago?.estado === 'cancelada'">
-                        <strong>Reactivar y extender fecha de vencimiento</strong> (obligatorio para membresías vencidas o canceladas)
+                        <strong>Reactivar y extender fecha de vencimiento</strong> (obligatorio para membresías vencidas
+                        o canceladas)
                       </span>
                       <span v-else>
                         Extender fecha de vencimiento automáticamente
@@ -447,9 +390,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { 
-  fetchMembresias, 
-  createMembresia, 
+import {
+  fetchMembresias,
+  createMembresia,
   updateMembresiaEstado,
   fetchPagosMembresia,
   createPagoMembresia,
@@ -549,17 +492,17 @@ const formFechas = ref({
 
 const membresiasFiltradas = computed(() => {
   let filtradas = [...membresias.value];
-  
+
   // Filtro por estado
   if (filtroEstado.value) {
     filtradas = filtradas.filter(m => m.estado === filtroEstado.value);
   }
-  
+
   // Filtro por cliente
   if (filtroClienteId.value) {
     filtradas = filtradas.filter(m => m.cliente_id === filtroClienteId.value);
   }
-  
+
   // Filtro por rango de fechas (fecha de vencimiento)
   if (filtroFechaDesde.value || filtroFechaHasta.value) {
     filtradas = filtradas.filter(m => {
@@ -568,29 +511,29 @@ const membresiasFiltradas = computed(() => {
       if (!fechaVencimientoStr) {
         return false; // Si no se puede normalizar, excluir
       }
-      
+
       // Normalizar filtros
       const fechaDesdeStr = filtroFechaDesde.value ? normalizarFecha(filtroFechaDesde.value) : null;
       const fechaHastaStr = filtroFechaHasta.value ? normalizarFecha(filtroFechaHasta.value) : null;
-      
+
       // Comparar como strings (YYYY-MM-DD)
       // La comparación lexicográfica funciona porque el formato es YYYY-MM-DD
-      
+
       // Si hay filtro "desde", excluir fechas anteriores
       if (fechaDesdeStr && fechaVencimientoStr < fechaDesdeStr) {
         return false;
       }
-      
+
       // Si hay filtro "hasta", excluir fechas posteriores (pero incluir las iguales)
       if (fechaHastaStr && fechaVencimientoStr > fechaHastaStr) {
         return false;
       }
-      
+
       // Si llegamos aquí, la fecha está en el rango (inclusivo en ambos extremos)
       return true;
     });
   }
-  
+
   return filtradas.sort((a, b) => {
     const fechaA = new Date(a.fecha_vencimiento).getTime();
     const fechaB = new Date(b.fecha_vencimiento).getTime();
@@ -624,16 +567,16 @@ watch([() => formMembresia.value.fecha_inicio, () => formMembresia.value.tipo_me
 onMounted(async () => {
   // Leer filtros desde el composable
   const filters = getFilters();
-  
+
   if (filters) {
     if (filters.estado) {
       filtroEstado.value = filters.estado;
     }
-    
+
     if (filters.clienteId) {
       filtroClienteId.value = filters.clienteId;
     }
-    
+
     if (filters.fechaDesde && filters.fechaHasta) {
       filtroFechaDesde.value = filters.fechaDesde;
       filtroFechaHasta.value = filters.fechaHasta;
@@ -641,20 +584,20 @@ onMounted(async () => {
       periodoActivo.value = filters.periodo;
       aplicarPeriodo(filters.periodo);
     }
-    
+
     // Limpiar filtros después de usarlos
     clearFilters();
   }
-  
+
   await loadMembresias();
   const sucursalId = isSuperadmin.value ? null : currentSucursalId.value;
   await loadClientes(sucursalId);
   await loadTiposMembresia();
-  
+
   if (isSuperadmin.value) {
     await loadSucursales();
   }
-  
+
   // Actualizar estados silenciosamente al cargar (sin mostrar alerta)
   await actualizarEstadosFromComposable(false);
   await loadMembresias();
@@ -663,11 +606,11 @@ onMounted(async () => {
 const calcularFechasPeriodo = (periodo: string) => {
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
-  
+
   let desde: Date;
   let hasta: Date = new Date(hoy);
   hasta.setHours(23, 59, 59, 999);
-  
+
   switch (periodo) {
     case 'hoy':
       desde = new Date(hoy);
@@ -693,7 +636,7 @@ const calcularFechasPeriodo = (periodo: string) => {
     default:
       return { desde: null, hasta: null };
   }
-  
+
   return {
     desde: desde.toISOString().split('T')[0],
     hasta: hasta.toISOString().split('T')[0]
@@ -703,11 +646,11 @@ const calcularFechasPeriodo = (periodo: string) => {
 const aplicarPeriodo = (periodo: string) => {
   periodoActivo.value = periodo;
   const fechas = calcularFechasPeriodo(periodo);
-  
+
   if (fechas.desde && fechas.hasta) {
     filtroFechaDesde.value = fechas.desde;
     filtroFechaHasta.value = fechas.hasta;
-    
+
     // No recargar del servidor, el filtro se aplica en el cliente
   }
 };
@@ -734,10 +677,10 @@ const getNombreCliente = (clienteId: number | null): string => {
 };
 
 const loadMembresias = async () => {
-  const sucursalId = isSuperadmin.value 
-    ? (filtroSucursal.value || null) 
+  const sucursalId = isSuperadmin.value
+    ? (filtroSucursal.value || null)
     : currentSucursalId.value;
-  
+
   // Cargar todas las membresías de la sucursal (sin filtros de estado/cliente)
   // Los filtros se aplican en el cliente mediante el computed
   await loadMembresiasFromComposable(
@@ -787,13 +730,13 @@ const cerrarModal = () => {
 
 const guardarMembresia = async () => {
   // Determinar la sucursal a usar
-  const sucursalId = isSuperadmin.value 
-    ? sucursalSeleccionada.value 
+  const sucursalId = isSuperadmin.value
+    ? sucursalSeleccionada.value
     : currentSucursalId.value;
-  
+
   if (!sucursalId) {
-    errorMessage.value = isSuperadmin.value 
-      ? 'Debes seleccionar una sucursal' 
+    errorMessage.value = isSuperadmin.value
+      ? 'Debes seleccionar una sucursal'
       : 'Debes estar asignado a una sucursal';
     return;
   }
@@ -803,7 +746,7 @@ const guardarMembresia = async () => {
     errorMessage.value = 'Debes seleccionar un tipo de membresía';
     return;
   }
-  
+
   if (!formMembresia.value.fecha_vencimiento) {
     errorMessage.value = 'Debes ingresar la fecha de vencimiento';
     return;
@@ -849,7 +792,7 @@ const guardarMembresia = async () => {
     if (membresiaCreada && currentUser.value) {
       const fechaInicio = new Date(formMembresia.value.fecha_inicio);
       const mesPagado = `${fechaInicio.getFullYear()}-${String(fechaInicio.getMonth() + 1).padStart(2, '0')}`;
-      
+
       const { error: pagoError } = await createPagoMembresia({
         membresia_id: membresiaCreada.id,
         fecha_pago: getFechaHoraActualLocal(),
@@ -894,7 +837,7 @@ const reactivarMembresia = async (membresia: Membresia) => {
   const result = await reactivarMembresiaFromComposable(membresia);
   if (result?.success) {
     await loadMembresias();
-    
+
     // Si el modal de detalle está abierto, actualizar
     if (showDetalleModal.value && membresiaDetalle.value?.id === membresia.id) {
       membresiaDetalle.value.estado = 'activa';
@@ -917,13 +860,13 @@ const enviarRecordatorio = (membresia: Membresia) => {
 const editarFechas = (membresia: Membresia) => {
   membresiaEditandoFechas.value = membresia;
   // Manejar formato de fecha (puede venir como ISO string o solo fecha)
-  const fechaInicio = membresia.fecha_inicio.includes('T') 
-    ? membresia.fecha_inicio.split('T')[0] 
+  const fechaInicio = membresia.fecha_inicio.includes('T')
+    ? membresia.fecha_inicio.split('T')[0]
     : membresia.fecha_inicio;
-  const fechaVencimiento = membresia.fecha_vencimiento.includes('T') 
-    ? membresia.fecha_vencimiento.split('T')[0] 
+  const fechaVencimiento = membresia.fecha_vencimiento.includes('T')
+    ? membresia.fecha_vencimiento.split('T')[0]
     : membresia.fecha_vencimiento;
-  
+
   formFechas.value = {
     fecha_inicio: fechaInicio,
     fecha_vencimiento: fechaVencimiento
@@ -961,7 +904,7 @@ const guardarFechas = async () => {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     fechaVencimiento.setHours(0, 0, 0, 0);
-    
+
     let nuevoEstado: 'activa' | 'vencida' | 'cancelada' | null = null;
     let mensajeEstado = '';
 
@@ -974,8 +917,8 @@ const guardarFechas = async () => {
       }
     } else {
       // Si la fecha es futura o hoy
-      if (membresiaEditandoFechas.value.estado === 'cancelada' || 
-          membresiaEditandoFechas.value.estado === 'vencida') {
+      if (membresiaEditandoFechas.value.estado === 'cancelada' ||
+        membresiaEditandoFechas.value.estado === 'vencida') {
         // Si estaba cancelada o vencida y ahora tiene fecha futura, reactivar
         nuevoEstado = 'activa';
         mensajeEstado = ' y reactivada';
@@ -1012,7 +955,7 @@ const guardarFechas = async () => {
     Swal.fire('Éxito', 'Fechas actualizadas correctamente' + mensajeEstado, 'success');
     cerrarFechasModal();
     loadMembresias();
-    
+
     // Si el modal de detalle está abierto, actualizar la membresía
     if (showDetalleModal.value && membresiaDetalle.value?.id === membresiaEditandoFechas.value.id) {
       const { data } = await fetchMembresias(
@@ -1073,18 +1016,18 @@ const cerrarClienteModal = () => {
 
 const guardarCliente = async () => {
   if (!clienteEditando.value) return;
-  
+
   loadingCliente.value = true;
   errorMessageCliente.value = '';
-  
+
   try {
     const { error } = await updateCliente(clienteEditando.value.id, formCliente.value);
-    
+
     if (error) {
       errorMessageCliente.value = error.message;
       return;
     }
-    
+
     Swal.fire('Éxito', 'Cliente actualizado correctamente', 'success');
     cerrarClienteModal();
     await loadMembresias();
@@ -1102,11 +1045,11 @@ const eliminarMembresia = async (membresia: Membresia) => {
     Swal.fire('Error', 'Solo el superadmin puede eliminar membresías', 'error');
     return;
   }
-  
+
   const result = await eliminarMembresiaFromComposable(membresia);
   if (result?.success) {
     await loadMembresias();
-    
+
     // Cerrar el modal de detalle si está abierto
     if (showDetalleModal.value && membresiaDetalle.value?.id === membresia.id) {
       showDetalleModal.value = false;
@@ -1173,15 +1116,15 @@ const guardarPago = async () => {
 
     // Si la membresía está vencida o cancelada, siempre reactivarla y extender
     // Si está activa, solo extender si está marcada la opción
-    const debeExtender = membresiaPago.value.estado === 'vencida' || 
-                         membresiaPago.value.estado === 'cancelada' || 
-                         extenderVencimiento.value;
-    
+    const debeExtender = membresiaPago.value.estado === 'vencida' ||
+      membresiaPago.value.estado === 'cancelada' ||
+      extenderVencimiento.value;
+
     if (debeExtender && membresiaPago.value.tipo_membresia) {
       const tipoMembresia = tiposMembresia.value.find(t => t.id === membresiaPago.value!.tipo_membresia_id);
       if (tipoMembresia) {
         let nuevaFechaVencimiento: Date;
-        
+
         // Si está vencida o cancelada, calcular desde hoy. Si está activa, extender desde la fecha actual
         if (membresiaPago.value.estado === 'vencida' || membresiaPago.value.estado === 'cancelada') {
           nuevaFechaVencimiento = new Date();
@@ -1191,26 +1134,26 @@ const guardarPago = async () => {
           nuevaFechaVencimiento = new Date(fechaVencimientoActual);
           nuevaFechaVencimiento.setDate(nuevaFechaVencimiento.getDate() + tipoMembresia.duracion_dias);
         }
-        
+
         // Actualizar la membresía: reactivar si está vencida o cancelada, o mantener activa
         const nuevoEstado = 'activa';
         const { error: updateError } = await updateMembresiaEstado(
           membresiaPago.value.id,
           nuevoEstado
         );
-        
+
         if (updateError) {
           console.error('Error al actualizar estado:', updateError);
         } else {
           // Actualizar la fecha de vencimiento directamente en la base de datos
           const { error: fechaError } = await supabase
             .from('membresias')
-            .update({ 
+            .update({
               fecha_vencimiento: nuevaFechaVencimiento.toISOString().split('T')[0],
               estado: nuevoEstado
             })
             .eq('id', membresiaPago.value.id);
-          
+
           if (fechaError) {
             console.error('Error al actualizar fecha:', fechaError);
           }
@@ -1224,7 +1167,7 @@ const guardarPago = async () => {
     Swal.fire('Éxito', 'Pago registrado correctamente', 'success');
     cerrarPagoModal();
     loadMembresias();
-    
+
     // Si el modal de detalle está abierto, recargar los pagos
     if (showDetalleModal.value && membresiaDetalle.value) {
       const { data } = await fetchPagosMembresia(membresiaDetalle.value.id);
@@ -1239,4 +1182,3 @@ const guardarPago = async () => {
   }
 };
 </script>
-

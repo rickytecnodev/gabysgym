@@ -1,14 +1,11 @@
 <template>
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row g-3">
+  <div class="p-3 rounded-3 border mb-2 bg-white">
+      <div class="row gy-2">
         <div v-if="isSuperadmin" class="col-md-3">
           <label class="form-label">Sucursal</label>
-          <select 
-            :value="filtroSucursal === null ? '' : filtroSucursal" 
-            @change="$emit('update:filtroSucursal', ($event.target as HTMLSelectElement).value === '' ? null : Number(($event.target as HTMLSelectElement).value))" 
-            class="form-select"
-          >
+          <select :value="filtroSucursal === null ? '' : filtroSucursal"
+            @change="$emit('update:filtroSucursal', ($event.target as HTMLSelectElement).value === '' ? null : Number(($event.target as HTMLSelectElement).value))"
+            class="form-select">
             <option value="">Todas</option>
             <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
               {{ sucursal.nombre }}
@@ -17,11 +14,8 @@
         </div>
         <div class="col-md-3">
           <label class="form-label">Categoría</label>
-          <select 
-            :value="filtroCategoria" 
-            @change="$emit('update:filtroCategoria', ($event.target as HTMLSelectElement).value)" 
-            class="form-select"
-          >
+          <select :value="filtroCategoria"
+            @change="$emit('update:filtroCategoria', ($event.target as HTMLSelectElement).value)" class="form-select">
             <option value="">Todas</option>
             <option value="suplementos">Suplementos</option>
             <option value="ropa">Ropa</option>
@@ -32,11 +26,8 @@
         </div>
         <div class="col-md-3">
           <label class="form-label">Estado</label>
-          <select 
-            :value="filtroEstado" 
-            @change="$emit('update:filtroEstado', ($event.target as HTMLSelectElement).value)" 
-            class="form-select"
-          >
+          <select :value="filtroEstado"
+            @change="$emit('update:filtroEstado', ($event.target as HTMLSelectElement).value)" class="form-select">
             <option value="">Todos</option>
             <option value="activo">Activo</option>
             <option value="inactivo">Inactivo</option>
@@ -44,7 +35,7 @@
         </div>
       </div>
     </div>
-  </div>
+
 </template>
 
 <script setup lang="ts">

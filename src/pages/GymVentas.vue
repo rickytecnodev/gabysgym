@@ -1,7 +1,7 @@
 <template>
   <div class="bg-light min-vh-100">
-    <div class="container-fluid py-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="container-fluid py-2">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">Ventas</h1>
         <button @click="showModal = true" class="btn btn-primary">
           <i class="fa-solid fa-plus me-1"></i>
@@ -9,15 +9,14 @@
         </button>
       </div>
 
-      <!-- Filtros -->
-      <FiltrosVentas v-model:filtro-sucursal="filtroSucursal" v-model:filtro-fecha-desde="filtroFechaDesde"
-        v-model:filtro-fecha-hasta="filtroFechaHasta" v-model:filtro-estado="filtroEstado"
-        :periodo-activo="periodoActivo" :sucursales="sucursales" :is-superadmin="isSuperadmin"
-        @aplicar-periodo="aplicarPeriodo" @limpiar-periodo="limpiarPeriodo" />
-
       <!-- Tabs y Tablas de ventas -->
-      <TabsVentas :tab-activo="tabActivo" @cambiar-tab="tabActivo = $event">
+      <TabsVentas :tab-activo="tabActivo" @cambiar-tab="tabActivo = $event"> <!-- Filtros -->
+
         <template #productos>
+          <FiltrosVentas v-model:filtro-sucursal="filtroSucursal" v-model:filtro-fecha-desde="filtroFechaDesde"
+            v-model:filtro-fecha-hasta="filtroFechaHasta" v-model:filtro-estado="filtroEstado"
+            :periodo-activo="periodoActivo" :sucursales="sucursales" :is-superadmin="isSuperadmin"
+            :tab-activo="tabActivo" @aplicar-periodo="aplicarPeriodo" @limpiar-periodo="limpiarPeriodo" />
           <!-- Tabla de ventas productos (Desktop) -->
           <div class="d-none d-md-block">
             <TablaVentasProductos :ventas="ventasFiltradas" :is-superadmin="isSuperadmin"
@@ -32,6 +31,10 @@
           </div>
         </template>
         <template #membresias>
+          <FiltrosVentas v-model:filtro-sucursal="filtroSucursal" v-model:filtro-fecha-desde="filtroFechaDesde"
+            v-model:filtro-fecha-hasta="filtroFechaHasta" v-model:filtro-estado="filtroEstado"
+            :periodo-activo="periodoActivo" :sucursales="sucursales" :is-superadmin="isSuperadmin"
+            :tab-activo="tabActivo" @aplicar-periodo="aplicarPeriodo" @limpiar-periodo="limpiarPeriodo" />
           <!-- Tabla de pagos membresía (Desktop) -->
           <div class="d-none d-md-block">
             <TablaPagosMembresia :pagos="pagosMembresiaFiltrados" :is-superadmin="isSuperadmin"
