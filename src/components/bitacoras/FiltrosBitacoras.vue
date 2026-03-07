@@ -4,21 +4,15 @@
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label">Fecha Desde</label>
-          <input 
-            :value="filtroFechaDesde" 
-            @input="$emit('update:filtroFechaDesde', ($event.target as HTMLInputElement).value)" 
-            type="date" 
-            class="form-control"
-          >
+          <input :value="filtroFechaDesde"
+            @input="$emit('update:filtroFechaDesde', ($event.target as HTMLInputElement).value)" type="date"
+            class="form-control">
         </div>
         <div class="col-md-6">
           <label class="form-label">Fecha Hasta</label>
-          <input 
-            :value="filtroFechaHasta" 
-            @input="$emit('update:filtroFechaHasta', ($event.target as HTMLInputElement).value)" 
-            type="date" 
-            class="form-control"
-          >
+          <input :value="filtroFechaHasta"
+            @input="$emit('update:filtroFechaHasta', ($event.target as HTMLInputElement).value)" type="date"
+            class="form-control">
         </div>
       </div>
     </div>
