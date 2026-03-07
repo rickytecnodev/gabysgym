@@ -18,7 +18,7 @@ export function useVentas() {
   const clientes = ref<Cliente[]>([]);
   const sucursales = ref<Sucursal[]>([]);
   const loading = ref(false);
-  const loadingData = ref(false);
+  const loadingData = ref(true);
 
   const loadVentas = async (
     sucursalId: number | null,

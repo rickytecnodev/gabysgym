@@ -23,7 +23,7 @@ export function useMembresias() {
   const pagosMembresia = ref<PagoMembresia[]>([]);
   const sucursales = ref<Sucursal[]>([]);
   const loading = ref(false);
-  const loadingData = ref(false);
+  const loadingData = ref(true);
 
   // Función helper para normalizar fechas
   const normalizarFecha = (fecha: any): string | null => {

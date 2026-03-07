@@ -11,9 +11,15 @@ body {
   padding-top: 70px; /* Espacio para el navbar fijo */
 }
 
-/* Quitar padding-top en la página de login */
+/* Página de login: sin padding y fondo igual para evitar franja blanca */
 body:has(.login-page) {
   padding-top: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #01153a 0%, #1b294d 50%, #224a9d 100%);
+}
+
+html:has(.login-page) {
+  min-height: 100vh;
 }
 
 #gymapp {

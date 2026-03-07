@@ -12,7 +12,7 @@ export function useClientes() {
   const clientes = ref<ClienteConMembresias[]>([]);
   const sucursales = ref<Sucursal[]>([]);
   const loading = ref(false);
-  const loadingData = ref(false);
+  const loadingData = ref(true);
 
   const loadClientes = async (sucursalId: number | null) => {
     loadingData.value = true;

@@ -1,5 +1,5 @@
 <template>
-  <div class="login-page bg-primary d-flex align-items-center" style="background: linear-gradient(135deg, #01153a 0%, #1b294d 50%, #224a9d 100%); min-height: 100vh; margin-top: -70px; padding-top: 70px;">
+  <div class="login-page bg-primary d-flex align-items-center">
     <div class="container py-4">
       <div class="row justify-content-center">
         <div class="col-md-5 col-lg-4">
@@ -14,35 +14,19 @@
               <form @submit.prevent="handleLogin">
                 <div class="mb-3">
                   <label for="username" class="form-label fw-semibold">Usuario</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="username" 
-                    v-model="formData.username" 
-                    placeholder="Usuario"
-                    required 
-                    autocomplete="username" 
-                  />
+                  <input type="text" class="form-control" id="username" v-model="formData.username"
+                    placeholder="Usuario" required autocomplete="username" />
                 </div>
 
                 <div class="mb-3">
                   <label for="password" class="form-label fw-semibold">Contraseña</label>
                   <div class="position-relative">
-                    <input
-                      :type="showPassword ? 'text' : 'password'"
-                      class="form-control pe-5"
-                      id="password"
-                      v-model="formData.password"
-                      placeholder="••••••••"
-                      required
-                      autocomplete="current-password"
-                    />
-                    <button
-                      type="button"
+                    <input :type="showPassword ? 'text' : 'password'" class="form-control pe-5" id="password"
+                      v-model="formData.password" placeholder="••••••••" required autocomplete="current-password" />
+                    <button type="button"
                       class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-secondary text-decoration-none p-2"
                       :aria-label="showPassword ? 'Ocultar contraseña' : 'Ver contraseña'"
-                      @click="showPassword = !showPassword"
-                    >
+                      @click="showPassword = !showPassword">
                       <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
                     </button>
                   </div>
@@ -56,19 +40,14 @@
                   {{ successMessage }}
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3" style="background-color: #224a9d; border-color: #224a9d;" :disabled="loading">
-                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3"
+                  style="background-color: #224a9d; border-color: #224a9d;" :disabled="loading">
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status"
+                    aria-hidden="true"></span>
                   <span v-if="!loading">Iniciar Sesión</span>
                   <span v-else>Iniciando sesión...</span>
                 </button>
               </form>
-
-              <div class="text-center mt-3">
-                <small class="text-muted">
-                  <strong>Superadmin:</strong> username='superadmin', password='admin123'<br>
-                  <strong>Empleado:</strong> username='empleado1/2/3', password='empleado123'
-                </small>
-              </div>
             </div>
           </div>
         </div>
@@ -121,10 +100,10 @@ const handleLogin = async () => {
         ...data,
         password: undefined
       };
-      
+
       try {
         saveSession(userData);
-        
+
         // Redirigir según el tipo de usuario
         const { isSuperadmin } = useAuth();
         if (isSuperadmin.value) {
@@ -150,6 +129,7 @@ const handleLogin = async () => {
 
 <style scoped>
 .login-page {
+  min-height: 100vh;
   margin-top: -70px;
   padding-top: 70px;
 }

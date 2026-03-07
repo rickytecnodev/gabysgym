@@ -109,7 +109,7 @@ const sucursales = ref<Sucursal[]>([]);
 const showModal = ref(false);
 const usuarioEditando = ref<Empleado | null>(null);
 const loading = ref(false);
-const loadingData = ref(false);
+const loadingData = ref(true);
 const errorMessage = ref('');
 
 const formUsuario = ref({

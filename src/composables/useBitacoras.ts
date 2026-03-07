@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 export function useBitacoras() {
   const bitacoras = ref<BitacoraDia[]>([]);
   const loading = ref(false);
-  const loadingData = ref(false);
+  const loadingData = ref(true);
 
   const loadBitacoras = async (
     empleadoId?: number | null,

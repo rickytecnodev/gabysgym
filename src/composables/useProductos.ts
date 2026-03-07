@@ -7,7 +7,7 @@ export function useProductos() {
   const productos = ref<Producto[]>([]);
   const sucursales = ref<Sucursal[]>([]);
   const loading = ref(false);
-  const loadingData = ref(false);
+  const loadingData = ref(true);
 
   const loadProductos = async (sucursalId: number | null) => {
     loadingData.value = true;

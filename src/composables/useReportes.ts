@@ -8,7 +8,7 @@ export function useReportes() {
   const reporteMembresias = ref<ReporteMembresias | null>(null);
   const empleados = ref<Empleado[]>([]);
   const sucursales = ref<Sucursal[]>([]);
-  const loadingData = ref(false);
+  const loadingData = ref(true);
 
   const loadSucursales = async () => {
     const { data } = await fetchSucursales();
