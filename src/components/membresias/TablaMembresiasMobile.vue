@@ -47,23 +47,6 @@
                 :disabled="membresia.estado === 'cancelada'" title="Registrar pago">
                 <i class="fa-solid fa-money-bill-wave"></i>
               </button>
-              <button @click.stop="$emit('enviar-recordatorio', membresia)" class="btn btn-sm btn-outline-success"
-                :disabled="(membresia.estado !== 'activa' && membresia.estado !== 'vencida') || !membresia.cliente?.whatsapp"
-                title="Enviar recordatorio">
-                <i class="fa-brands fa-whatsapp"></i>
-              </button>
-              <button v-if="membresia.estado === 'activa' || membresia.estado === 'vencida'"
-                @click.stop="$emit('cancelar', membresia.id)" class="btn btn-sm btn-outline-danger" title="Cancelar">
-                <i class="fa-solid fa-ban"></i>
-              </button>
-              <button v-if="membresia.estado === 'cancelada'" @click.stop="$emit('reactivar', membresia)"
-                class="btn btn-sm btn-outline-success" title="Reactivar">
-                <i class="fa-solid fa-check-circle"></i>
-              </button>
-              <button @click.stop="$emit('editar-fechas', membresia)" class="btn btn-sm btn-outline-primary"
-                title="Editar fechas">
-                <i class="fa-solid fa-calendar-days"></i>
-              </button>
               <button v-if="isSuperadmin" @click.stop="$emit('eliminar', membresia)"
                 class="btn btn-sm btn-outline-danger" title="Eliminar">
                 <i class="fa-solid fa-trash"></i>

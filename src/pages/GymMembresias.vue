@@ -38,56 +38,9 @@
 
       <!-- Modal de nueva membresía -->
       <GymModal v-model:show="showModal" title="Nueva Membresía">
-        <form id="formMembresia" @submit.prevent="guardarMembresia">
-                <div class="mb-3" v-if="isSuperadmin">
-                  <label class="form-label">Sucursal *</label>
-                  <select v-model.number="sucursalSeleccionada" class="form-select" required>
-                    <option value="">Selecciona una sucursal</option>
-                    <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-                      {{ sucursal.nombre }}
-                    </option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Cliente *</label>
-                  <select v-model="formMembresia.cliente_id" class="form-select" required>
-                    <option value="">Selecciona un cliente</option>
-                    <option v-for="cliente in clientes" :key="cliente.id" :value="cliente.id">
-                      {{ cliente.nombre_completo }} - {{ cliente.telefono }}
-                    </option>
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Tipo de Membresía *</label>
-                  <select v-model.number="formMembresia.tipo_membresia_id" class="form-select" required
-                    @change="onTipoMembresiaChange">
-                    <option value="">Selecciona un tipo</option>
-                    <option v-for="tipo in tiposMembresia" :key="tipo.id" :value="tipo.id">
-                      {{ tipo.nombre }} - ${{ tipo.precio_mensual.toFixed(2) }}/mes
-                    </option>
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Fecha de Inicio *</label>
-                  <input v-model="formMembresia.fecha_inicio" type="date" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Fecha de Vencimiento *</label>
-                  <input v-model="formMembresia.fecha_vencimiento" type="date" class="form-control" required>
-                  <small class="text-muted">Se calcula automáticamente según el tipo, pero puedes editarla</small>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Precio *</label>
-                  <input v-model.number="formMembresia.precio_mensual" type="number" step="0.01" class="form-control"
-                    required>
-                </div>
-
-          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-        </form>
+        <ModalNuevaMembresia v-model:sucursal-id="sucursalSeleccionada" :form="formMembresia" :sucursales="sucursales"
+          :clientes="clientes" :tipos-membresia="tiposMembresia" :is-superadmin="isSuperadmin" :loading="loading"
+          :error-message="errorMessage" @submit="guardarMembresia" @change-tipo="onTipoMembresiaChange" />
         <template #footer>
           <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
           <button type="submit" form="formMembresia" class="btn btn-primary" :disabled="loading">
@@ -99,91 +52,9 @@
 
       <!-- Modal de detalle -->
       <GymModal v-model:show="showDetalleModal" title="Detalle de Membresía" size="lg">
-        <div v-if="membresiaDetalle">
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <p><strong>Cliente:</strong> {{ membresiaDetalle.cliente?.nombre_completo }}</p>
-                    <p><strong>Teléfono:</strong> {{ membresiaDetalle.cliente?.telefono }}</p>
-                    <p><strong>WhatsApp:</strong> {{ membresiaDetalle.cliente?.whatsapp || 'N/A' }}</p>
-                  </div>
-                  <div class="col-md-6">
-                    <p><strong>Tipo:</strong> {{ membresiaDetalle.tipo_membresia?.nombre }}</p>
-                    <p><strong>Fecha Inicio:</strong> {{ formatFecha(membresiaDetalle.fecha_inicio) }}</p>
-                    <p><strong>Fecha Vencimiento:</strong> {{ formatFecha(membresiaDetalle.fecha_vencimiento) }}</p>
-                    <p><strong>Estado:</strong>
-                      <span :class="getEstadoBadgeClass(membresiaDetalle.estado)">
-                        {{ membresiaDetalle.estado }}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <hr>
-                <h6>Historial de Pagos</h6>
-                <div v-if="pagosMembresia.length > 0" class="table-responsive">
-                  <table class="table table-sm">
-                    <thead>
-                      <tr>
-                        <th>Fecha</th>
-                        <th>Mes Pagado</th>
-                        <th>Monto</th>
-                        <th>Método</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="pago in pagosMembresia" :key="pago.id">
-                        <td>{{ formatFecha(pago.fecha_pago) }}</td>
-                        <td>{{ formatMesPagado(pago.mes_pagado) }}</td>
-                        <td>${{ pago.monto.toFixed(2) }}</td>
-                        <td>{{ pago.metodo_pago || 'N/A' }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <p v-else class="text-muted">No hay pagos registrados</p>
-                <div class="mt-3 d-flex flex-wrap gap-2">
-                  <!-- Grupo: Acciones (Pagar, WhatsApp, Cancelar/Reactivar) -->
-                  <div class="btn-group" role="group">
-                    <button @click="registrarPago(membresiaDetalle)" class="btn btn-sm btn-outline-success"
-                      :disabled="membresiaDetalle?.estado === 'cancelada'"
-                      :title="membresiaDetalle?.estado === 'cancelada' ? 'No se puede pagar una membresía cancelada' : 'Registrar pago'">
-                      <i class="fa-solid fa-money-bill-wave me-1"></i>
-                      Registrar Pago
-                    </button>
-                    <button @click="enviarRecordatorio(membresiaDetalle!)" class="btn btn-sm btn-outline-success"
-                      :disabled="(membresiaDetalle?.estado !== 'activa' && membresiaDetalle?.estado !== 'vencida') || !membresiaDetalle?.cliente?.whatsapp"
-                      :title="(membresiaDetalle?.estado !== 'activa' && membresiaDetalle?.estado !== 'vencida') ? 'Solo disponible para membresías activas o vencidas' : !membresiaDetalle?.cliente?.whatsapp ? 'El cliente no tiene WhatsApp' : 'Enviar recordatorio por WhatsApp'">
-                      <i class="fa-brands fa-whatsapp me-1"></i>
-                      Enviar WhatsApp
-                    </button>
-                    <button v-if="membresiaDetalle?.estado === 'activa' || membresiaDetalle?.estado === 'vencida'"
-                      @click="cancelarMembresia(membresiaDetalle!.id)" class="btn btn-sm btn-outline-danger"
-                      title="Cancelar membresía">
-                      <i class="fa-solid fa-ban me-1"></i>
-                      Cancelar
-                    </button>
-                    <button v-if="membresiaDetalle?.estado === 'cancelada'"
-                      @click="reactivarMembresia(membresiaDetalle)" class="btn btn-sm btn-outline-success"
-                      title="Reactivar membresía">
-                      <i class="fa-solid fa-check-circle me-1"></i>
-                      Reactivar
-                    </button>
-                  </div>
-
-                  <!-- Grupo: Edición y Eliminación -->
-                  <div class="btn-group" role="group">
-                    <button @click="editarFechas(membresiaDetalle)" class="btn btn-sm btn-outline-primary"
-                      title="Editar fechas de membresía">
-                      <i class="fa-solid fa-calendar-days me-1"></i>
-                      Editar Fechas
-                    </button>
-                    <button v-if="isSuperadmin" @click="eliminarMembresia(membresiaDetalle!)"
-                      class="btn btn-sm btn-outline-danger" title="Eliminar membresía">
-                      <i class="fa-solid fa-trash me-1"></i>
-                      Eliminar Membresía
-                    </button>
-                  </div>
-                </div>
-        </div>
+        <ModalDetalleMembresia :membresia="membresiaDetalle" :pagos="pagosMembresia" :is-superadmin="isSuperadmin"
+          @registrar-pago="registrarPago" @enviar-whatsapp="(m) => enviarRecordatorio(m)" @cancelar="cancelarMembresia"
+          @reactivar="reactivarMembresia" @editar-fechas="editarFechas" @eliminar="eliminarMembresia" />
         <template #footer>
           <button type="button" class="btn btn-secondary" @click="showDetalleModal = false">Cerrar</button>
         </template>
@@ -191,76 +62,8 @@
 
       <!-- Modal de registrar pago -->
       <GymModal v-model:show="showPagoModal" title="Registrar Pago de Membresía">
-        <form id="formPago" @submit.prevent="guardarPago">
-                <div v-if="membresiaPago" class="mb-3">
-                  <div v-if="membresiaPago.estado === 'vencida'" class="alert alert-warning mb-3">
-                    <i class="fa-solid fa-exclamation-triangle me-2"></i>
-                    <strong>Membresía Vencida:</strong> Al registrar el pago, la membresía se reactivará automáticamente
-                    y se extenderá la fecha de vencimiento.
-                  </div>
-                  <div v-if="membresiaPago.estado === 'cancelada'" class="alert alert-info mb-3">
-                    <i class="fa-solid fa-info-circle me-2"></i>
-                    <strong>Membresía Cancelada:</strong> Al registrar el pago, la membresía se reactivará
-                    automáticamente y se extenderá la fecha de vencimiento desde hoy.
-                  </div>
-                  <p><strong>Cliente:</strong> {{ membresiaPago.cliente?.nombre_completo }}</p>
-                  <p><strong>Tipo:</strong> {{ membresiaPago.tipo_membresia?.nombre }}</p>
-                  <p><strong>Fecha Vencimiento Actual:</strong>
-                    <span
-                      :class="membresiaPago.estado === 'vencida' || membresiaPago.estado === 'cancelada' ? 'text-danger fw-bold' : ''">
-                      {{ formatFecha(membresiaPago.fecha_vencimiento) }}
-                    </span>
-                  </p>
-                  <p><strong>Estado:</strong>
-                    <span :class="getEstadoBadgeClass(membresiaPago.estado)">
-                      {{ membresiaPago.estado }}
-                    </span>
-                  </p>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Fecha de Pago *</label>
-                  <input v-model="formPago.fecha_pago" type="date" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Mes Pagado *</label>
-                  <input v-model="formPago.mes_pagado" type="month" class="form-control" required>
-                  <small class="text-muted">Formato: YYYY-MM (ej: 2026-07)</small>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Monto *</label>
-                  <input v-model.number="formPago.monto" type="number" step="0.01" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Método de Pago</label>
-                  <select v-model="formPago.metodo_pago" class="form-select">
-                    <option value="">Selecciona un método</option>
-                    <option value="efectivo">Efectivo</option>
-                    <option value="tarjeta">Tarjeta</option>
-                    <option value="transferencia">Transferencia</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Notas</label>
-                  <textarea v-model="formPago.notas" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="mb-3">
-                  <div class="form-check">
-                    <input v-model="extenderVencimiento" class="form-check-input" type="checkbox"
-                      id="extenderVencimiento"
-                      :disabled="membresiaPago?.estado === 'vencida' || membresiaPago?.estado === 'cancelada'">
-                    <label class="form-check-label" for="extenderVencimiento">
-                      <span v-if="membresiaPago?.estado === 'vencida' || membresiaPago?.estado === 'cancelada'">
-                        <strong>Reactivar y extender fecha de vencimiento</strong> (obligatorio para membresías vencidas
-                        o canceladas)
-                      </span>
-                      <span v-else>
-                        Extender fecha de vencimiento automáticamente
-                      </span>
-                    </label>
-                  </div>
-                </div>
-          <div v-if="errorMessagePago" class="alert alert-danger">{{ errorMessagePago }}</div>
-        </form>
+        <ModalRegistrarPago v-model:extender-vencimiento="extenderVencimiento" :form="formPago"
+          :membresia="membresiaPago" :error-message="errorMessagePago" @submit="guardarPago" />
         <template #footer>
           <button type="button" class="btn btn-secondary" @click="cerrarPagoModal">Cancelar</button>
           <button type="submit" form="formPago" class="btn btn-primary" :disabled="loadingPago">
@@ -272,21 +75,8 @@
 
       <!-- Modal de editar fechas -->
       <GymModal v-model:show="showFechasModal" title="Editar Fechas de Membresía">
-        <form id="formFechas" @submit.prevent="guardarFechas">
-                <div v-if="membresiaEditandoFechas" class="mb-3">
-                  <p><strong>Cliente:</strong> {{ membresiaEditandoFechas.cliente?.nombre_completo }}</p>
-                  <p><strong>Tipo:</strong> {{ membresiaEditandoFechas.tipo_membresia?.nombre }}</p>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Fecha Inicio *</label>
-                  <input v-model="formFechas.fecha_inicio" type="date" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Fecha Vencimiento *</label>
-                  <input v-model="formFechas.fecha_vencimiento" type="date" class="form-control" required>
-                </div>
-          <div v-if="errorMessageFechas" class="alert alert-danger">{{ errorMessageFechas }}</div>
-        </form>
+        <ModalEditarFechas :form="formFechas" :membresia="membresiaEditandoFechas" :error-message="errorMessageFechas"
+          @submit="guardarFechas" />
         <template #footer>
           <button type="button" class="btn btn-secondary" @click="cerrarFechasModal">Cancelar</button>
           <button type="submit" form="formFechas" class="btn btn-primary" :disabled="loadingFechas">
@@ -298,29 +88,7 @@
 
       <!-- Modal de editar cliente -->
       <GymModal v-model:show="showClienteModal" title="Editar Cliente">
-        <form id="formClienteMembresias" @submit.prevent="guardarCliente">
-                <div class="mb-3">
-                  <label class="form-label">Nombre Completo *</label>
-                  <input v-model="formCliente.nombre_completo" type="text" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Teléfono *</label>
-                  <input v-model="formCliente.telefono" type="tel" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Email</label>
-                  <input v-model="formCliente.email" type="email" class="form-control">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">WhatsApp</label>
-                  <input v-model="formCliente.whatsapp" type="tel" class="form-control">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Dirección</label>
-                  <textarea v-model="formCliente.direccion" class="form-control" rows="2"></textarea>
-                </div>
-          <div v-if="errorMessageCliente" class="alert alert-danger">{{ errorMessageCliente }}</div>
-        </form>
+        <ModalEditarCliente :form="formCliente" :error-message="errorMessageCliente" @submit="guardarCliente" />
         <template #footer>
           <button type="button" class="btn btn-secondary" @click="cerrarClienteModal">Cancelar</button>
           <button type="submit" form="formClienteMembresias" class="btn btn-primary" :disabled="loadingCliente">
@@ -351,11 +119,16 @@ import { useMembresias } from '@/composables/useMembresias';
 import { supabase } from '@/utils/supabase';
 import type { Membresia, Cliente, MembresiaForm } from '@/types/gym';
 import Swal from 'sweetalert2';
-import { formatFecha, formatMesPagado, getFechaActualLocal, getFechaHoraActualLocal } from '@/utils/dateFormatter';
+import { getFechaActualLocal, getFechaHoraActualLocal } from '@/utils/dateFormatter';
 import GymModal from '@/components/GymModal.vue';
 import FiltrosMembresias from '@/components/membresias/FiltrosMembresias.vue';
 import TablaMembresias from '@/components/membresias/TablaMembresias.vue';
 import TablaMembresiasMobile from '@/components/membresias/TablaMembresiasMobile.vue';
+import ModalNuevaMembresia from '@/components/membresias/modals/NuevaMembresia.vue';
+import ModalDetalleMembresia from '@/components/membresias/modals/DetalleMembresia.vue';
+import ModalRegistrarPago from '@/components/membresias/modals/RegistrarPago.vue';
+import ModalEditarFechas from '@/components/membresias/modals/EditarFechas.vue';
+import ModalEditarCliente from '@/components/membresias/modals/EditarCliente.vue';
 
 const { currentSucursalId, currentUser, isSuperadmin } = useAuth();
 const { getFilters, clearFilters } = useGymFilters();
@@ -923,15 +696,6 @@ const guardarFechas = async () => {
   }
 };
 
-
-const getEstadoBadgeClass = (estado: string) => {
-  const clases: Record<string, string> = {
-    activa: 'badge bg-success',
-    vencida: 'badge bg-danger',
-    cancelada: 'badge bg-secondary'
-  };
-  return clases[estado] || 'badge bg-secondary';
-};
 
 // Las funciones getVencimientoClass y getRowClass ahora están en el componente TablaMembresias
 

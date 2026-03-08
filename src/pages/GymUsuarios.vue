@@ -11,65 +11,20 @@
 
       <!-- Tabla de usuarios (Desktop) -->
       <div class="d-none d-md-block mb-2">
-        <TablaUsuarios :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario" @eliminar="eliminarUsuario" />
+        <TablaUsuarios :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario"
+          @eliminar="eliminarUsuario" />
       </div>
 
       <!-- Vista móvil de usuarios (Mobile) -->
       <div class="d-block d-md-none mb-2">
-        <TablaUsuariosMobile :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario" @eliminar="eliminarUsuario" />
+        <TablaUsuariosMobile :usuarios="usuarios" :loading="loadingData" @editar="editarUsuario"
+          @eliminar="eliminarUsuario" />
       </div>
 
       <!-- Modal de usuario (editar/crear) -->
       <GymModal v-model:show="showModal" :title="(usuarioEditando ? 'Editar' : 'Nuevo') + ' Usuario'">
-        <form id="formUsuario" @submit.prevent="guardarUsuario">
-          <div class="mb-3">
-            <label class="form-label">Usuario *</label>
-            <input v-model="formUsuario.username" type="text" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">{{ usuarioEditando ? 'Nueva ' : '' }}Contraseña {{ usuarioEditando ? '(dejar vacío para no cambiar)' : '*' }}</label>
-            <input v-model="formUsuario.password" type="password" class="form-control" :required="!usuarioEditando">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Nombre Completo *</label>
-            <input v-model="formUsuario.nombre_completo" type="text" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input v-model="formUsuario.email" type="email" class="form-control">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Teléfono</label>
-            <input v-model="formUsuario.telefono" type="text" class="form-control">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Rol *</label>
-            <select v-model="formUsuario.rol" class="form-select" required>
-              <option value="empleado">Empleado</option>
-              <option value="superadmin">Superadmin</option>
-            </select>
-          </div>
-          <div class="mb-3" v-if="formUsuario.rol === 'empleado'">
-            <label class="form-label">Sucursal</label>
-            <select v-model.number="formUsuario.sucursal_id" class="form-select">
-              <option :value="null">Sin sucursal</option>
-              <option v-for="sucursal in sucursales" :key="sucursal.id" :value="sucursal.id">
-                {{ sucursal.nombre }}
-              </option>
-            </select>
-          </div>
-          <div class="mb-3" v-else>
-            <input v-model="formUsuario.sucursal_id" type="hidden">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Estado *</label>
-            <select v-model="formUsuario.activo" class="form-select" required>
-              <option :value="true">Activo</option>
-              <option :value="false">Inactivo</option>
-            </select>
-          </div>
-          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-        </form>
+        <ModalFormUsuario :form="formUsuario" :sucursales="sucursales" :usuario-editando="usuarioEditando"
+          :error-message="errorMessage" @submit="guardarUsuario" />
         <template #footer>
           <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
           <button type="submit" form="formUsuario" class="btn btn-primary" :disabled="loading">
@@ -89,6 +44,7 @@ import type { Empleado, Sucursal } from '@/types/gym';
 import GymModal from '@/components/GymModal.vue';
 import TablaUsuarios from '@/components/usuarios/TablaUsuarios.vue';
 import TablaUsuariosMobile from '@/components/usuarios/TablaUsuariosMobile.vue';
+import ModalFormUsuario from '@/components/usuarios/modals/FormUsuario.vue';
 import Swal from 'sweetalert2';
 
 const usuarios = ref<Empleado[]>([]);

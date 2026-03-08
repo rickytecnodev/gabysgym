@@ -10,53 +10,21 @@
       </div>
 
       <!-- Filtros -->
-      <FiltrosBitacoras
-        v-model:filtro-fecha-desde="filtroFechaDesde"
-        v-model:filtro-fecha-hasta="filtroFechaHasta"
-      />
+      <FiltrosBitacoras v-model:filtro-fecha-desde="filtroFechaDesde" v-model:filtro-fecha-hasta="filtroFechaHasta" />
 
       <!-- Tabla de bitácoras (Desktop) -->
       <div class="d-none d-md-block mb-2">
-        <TablaBitacoras
-          :bitacoras="bitacoras"
-          :is-superadmin="isSuperadmin"
-          :loading="loadingData"
-        />
+        <TablaBitacoras :bitacoras="bitacoras" :is-superadmin="isSuperadmin" :loading="loadingData" />
       </div>
 
       <!-- Vista móvil de bitácoras (Mobile) -->
       <div class="d-block d-md-none mb-2">
-        <TablaBitacorasMobile
-          :bitacoras="bitacoras"
-          :is-superadmin="isSuperadmin"
-          :loading="loadingData"
-        />
+        <TablaBitacorasMobile :bitacoras="bitacoras" :is-superadmin="isSuperadmin" :loading="loadingData" />
       </div>
 
       <!-- Modal de nueva bitácora -->
       <GymModal v-model:show="showModal" title="Nueva Bitácora">
-        <form id="formBitacora" @submit.prevent="guardarBitacora">
-          <div class="mb-3">
-            <label class="form-label">Fecha *</label>
-            <input v-model="formBitacora.fecha" type="date" class="form-control" required disabled
-              title="La fecha no se puede editar. Se usa la fecha actual automáticamente.">
-            <small class="text-muted">La fecha se establece automáticamente con la fecha actual y no se puede modificar.</small>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Tipo *</label>
-            <select v-model="formBitacora.tipo" class="form-select" required>
-              <option value="nota">Nota</option>
-              <option value="incidente">Incidente</option>
-              <option value="observacion">Observación</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Descripción *</label>
-            <textarea v-model="formBitacora.descripcion" class="form-control" rows="4" required
-              placeholder="Describe el incidente, nota u observación..."></textarea>
-          </div>
-          <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-        </form>
+        <ModalNuevaBitacora :form="formBitacora" :error-message="errorMessage" @submit="guardarBitacora" />
         <template #footer>
           <button type="button" class="btn btn-secondary" @click="cerrarModal">Cancelar</button>
           <button type="submit" form="formBitacora" class="btn btn-primary" :disabled="loading">
@@ -79,6 +47,7 @@ import GymModal from '@/components/GymModal.vue';
 import FiltrosBitacoras from '@/components/bitacoras/FiltrosBitacoras.vue';
 import TablaBitacoras from '@/components/bitacoras/TablaBitacoras.vue';
 import TablaBitacorasMobile from '@/components/bitacoras/TablaBitacorasMobile.vue';
+import ModalNuevaBitacora from '@/components/bitacoras/modals/NuevaBitacora.vue';
 
 const { currentUser, isSuperadmin } = useAuth();
 const {
@@ -143,13 +112,13 @@ const guardarBitacora = async () => {
   }
 
   errorMessage.value = '';
-  
+
   // Asegurar que se use la fecha actual local si no se especificó otra
   const payload = {
     ...formBitacora.value,
     fecha: formBitacora.value.fecha || getFechaActualLocal()
   };
-  
+
   const result = await guardarBitacoraFromComposable(
     currentUser.value.id,
     payload
