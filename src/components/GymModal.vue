@@ -4,10 +4,9 @@
       @click.self="cerrar">
       <div :class="['gym-modal__box', size ? `gym-modal__box--${size}` : '']">
         <header class="gym-modal__header">
-          <button type="button" class="btn btn-secondary-outline" aria-label="Cerrar" @click="cerrar">
-            <i class="fa-solid fa-left-long" @click="cerrar"></i>
+          <button type="button" class="btn btn-secondary-outline d-md-none" aria-label="Regresar" @click="cerrar">
+            <i class="fa-solid fa-left-long"></i>
           </button>
-          
           <h2 id="gym-modal-title" class="gym-modal__title">{{ title }}</h2>
           <button type="button" class="btn btn-secondary-outline" aria-label="Cerrar" @click="cerrar">
             <i class="fa-solid fa-xmark" @click="cerrar"></i>
@@ -71,7 +70,7 @@ const cerrar = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem;
+  padding: .5rem 0rem;
   border-bottom: 1px solid var(--bs-border-color, #dee2e6);
   background-color: var(--bs-body-bg, #fff);
   border-radius: var(--bs-border-radius-lg, 0.5rem) var(--bs-border-radius-lg, 0.5rem) 0 0;
@@ -217,7 +216,6 @@ const cerrar = () => {
 
   .gym-modal__header .btn {
     color: rgba(255, 255, 255, 0.9);
-    border-color: rgba(255, 255, 255, 0.5);
     background: transparent;
   }
 
